@@ -2,16 +2,28 @@
 
 ## Phase 1 — Foundation
 
-### M1.7 Persistence
-- [ ] SQLAlchemy async engine + session management
-- [ ] Alembic migrations
-- [ ] Instruments + watchlists tables
-
-### Remaining
-- [ ] GitHub Actions CI (lint + typecheck + tests)
-- [ ] Readiness probes for TimescaleDB/Redis once clients land
+### Remaining (Phase 1 wrap-up)
+- [ ] Push repo to GitHub (CI workflow is ready but has nowhere to run)
+- [ ] Redis quote caching in the market data path (30–60s TTL)
+- [ ] Redis readiness probe once the client lands
+- [ ] Instruments table (deferred from M1.7 — watchlists ship first;
+      instruments land with the strategy engine's data needs in Phase 2)
 
 ## Done (2026-08-07)
+
+### M1.7 Persistence + Watchlists + CI
+- [x] SQLAlchemy async engine + session factory (`infrastructure/db/engine.py`)
+- [x] ORM models separate from domain models; naming conventions for Alembic
+- [x] `WatchlistRepository` port + SQLAlchemy adapter (+ in-memory fake for tests)
+- [x] Alembic async env + migration 0001 (watchlists, watchlist_items) applied
+- [x] REST CRUD: `/api/v1/watchlists` (+items add/remove), domain errors → 404/409
+- [x] `/health/ready` now probes the database (503/degraded when down)
+- [x] 10 new tests (service + repository via aiosqlite) — 23 total green
+- [x] Frontend Watchlists page: create/delete lists, add/remove symbols with
+      live QuoteCards; sidebar entry enabled
+- [x] GitHub Actions CI: backend (ruff, mypy, pytest) + frontend (eslint, build)
+- [x] End-to-end verified: CRUD against TimescaleDB, symbol normalization,
+      persistence across requests
 
 ### M1.1 Repo + layout
 - [x] Initialize git repo at `arcturus/`

@@ -40,4 +40,18 @@ Notes:
   60s refetch) through the provider adapter layer.
 - `npm run build` and ESLint clean.
 
-Next: M1.7 persistence (SQLAlchemy + Alembic), then GitHub Actions CI.
+## 2026-08-07 — M1.7 persistence, Watchlists module, CI
+
+- Docker infra stack running and healthy (TimescaleDB, Redis, Qdrant, Neo4j, MinIO).
+- Persistence layer: async SQLAlchemy engine/session management, ORM rows kept
+  separate from domain models, Alembic async migrations (0001 applied).
+- Watchlist vertical slice shipped end-to-end: domain (models/port/errors) →
+  service → SQLAlchemy repository → REST CRUD → Next.js Watchlists page with
+  live quote cards. Second module live in the sidebar.
+- `/health/ready` now probes the DB and reports 503/degraded when it's down.
+- GitHub Actions CI written (backend + frontend jobs) — needs a GitHub remote.
+- Quality gates: 23 pytest tests, ruff, mypy --strict, next build, eslint.
+
+Phase 1 Foundation is functionally complete (repo push + Redis caching carried
+as wrap-up items). Next: Phase 2 — Strategy Engine plugin framework and
+deterministic indicator library.

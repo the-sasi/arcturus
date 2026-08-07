@@ -10,8 +10,11 @@ from fastapi.middleware.cors import CORSMiddleware
 from arcturus_api import __version__
 from arcturus_api.api.v1 import health
 from arcturus_api.api.v1.router import router as v1_router
+from arcturus_api.application.watchlist.service import WatchlistService
 from arcturus_api.core.config import get_settings
 from arcturus_api.core.logging import configure_logging
+from arcturus_api.infrastructure.db.engine import build_engine, build_session_factory
+from arcturus_api.infrastructure.db.watchlist_repository import SqlAlchemyWatchlistRepository
 
 logger = logging.getLogger(__name__)
 
@@ -21,7 +24,17 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     settings = get_settings()
     configure_logging(settings.debug)
     logger.info("%s v%s starting (%s)", settings.app_name, __version__, settings.environment)
+
+    # Engine creation is lazy — no connection is made until first use, so the
+    # API stays up (with /health/ready reporting degraded) when the DB is down.
+    engine = build_engine(settings.postgres_dsn, echo=False)
+    session_factory = build_session_factory(engine)
+    app.state.db_engine = engine
+    app.state.watchlist_service = WatchlistService(SqlAlchemyWatchlistRepository(session_factory))
+
     yield
+
+    await engine.dispose()
     logger.info("Shutting down")
 
 

@@ -31,6 +31,18 @@ export type CandleSeries = {
   candles: Candle[];
 };
 
+export type WatchlistItem = {
+  symbol: SymbolRef;
+  added_at: string;
+};
+
+export type Watchlist = {
+  id: string;
+  name: string;
+  created_at: string;
+  items: WatchlistItem[];
+};
+
 export function formatSymbol(symbol: SymbolRef): string {
   return `${symbol.exchange}:${symbol.ticker}`;
 }

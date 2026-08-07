@@ -12,7 +12,7 @@ const MODULES: { label: string; href: string; ready: boolean }[] = [
   { label: "News Intelligence", href: "/news", ready: false },
   { label: "Decision Center", href: "/decisions", ready: false },
   { label: "Stock Workspace", href: "/workspace", ready: false },
-  { label: "Watchlists", href: "/watchlists", ready: false },
+  { label: "Watchlists", href: "/watchlists", ready: true },
   { label: "Research Lab", href: "/research", ready: false },
   { label: "Strategy Studio", href: "/strategies", ready: false },
   { label: "Automation Center", href: "/automation", ready: false },
