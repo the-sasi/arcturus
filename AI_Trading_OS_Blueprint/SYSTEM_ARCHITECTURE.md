@@ -1,0 +1,12 @@
+# System Architecture
+- Next.js frontend
+- FastAPI backend
+- LangGraph orchestrator
+- Strategy Engine
+- Research Engine
+- Risk Engine
+- Automation Engine
+- RAG
+- Neo4j
+- TimescaleDB
+- Vector DB

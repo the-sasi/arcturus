@@ -1,0 +1,3 @@
+"""Arcturus AI Trading OS — backend API."""
+
+__version__ = "0.1.0"
