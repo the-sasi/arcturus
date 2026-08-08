@@ -3,6 +3,7 @@ import type {
   CandleSeries,
   CompanyProfile,
   Fundamentals,
+  IndicatorSeries,
   InstrumentPage,
   MoversSnapshot,
   NewsArticle,
@@ -53,6 +54,11 @@ export const api = {
     ),
 
   getMovers: () => request<MoversSnapshot>("/api/v1/market/movers"),
+
+  getIndicators: (symbol: string, interval = "1d", specs = "ema:20,ema:50,rsi:14") =>
+    request<IndicatorSeries>(
+      `/api/v1/market/indicators/${encodeURIComponent(symbol)}?interval=${interval}&specs=${encodeURIComponent(specs)}`,
+    ),
 
   searchInstruments: (params: {
     query?: string;

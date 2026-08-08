@@ -1,5 +1,22 @@
 # Tasks
 
+## Phase 2 — Decision Engine
+
+### M2.2 Strategy Engine (next)
+- [ ] Strategy plugin interface: analyze/entry/exit/risk/confidence/score/metadata
+- [ ] First deterministic strategies: EMA crossover, RSI mean-reversion, breakout
+- [ ] Strategy runner endpoint: evaluate strategy X on symbol Y
+- [ ] Workspace "Analysis" panel showing strategy verdicts with reasons
+
+### M2.3 Market Intelligence Tier 1
+- [ ] Market-wide movers pipeline (beyond curated 50)
+- [ ] Sector heatmap; screeners on fundamentals; index breadth
+
+### Done (2026-08-09) — M2.1 Indicators + Workspace chart
+- [x] Indicator library: SMA/EMA/RSI/MACD/Bollinger (pure, golden-tested)
+- [x] GET /api/v1/market/indicators/{symbol} with spec grammar validation
+- [x] Workspace candlestick chart: volume, EMA20/50 overlays, RSI pane, 4 ranges
+
 ## Phase 1 — Foundation
 
 ### Remaining (Phase 1 wrap-up)

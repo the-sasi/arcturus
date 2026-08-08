@@ -3,6 +3,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { ArticleReader } from "@/components/article-reader";
+import { PriceChart } from "@/components/price-chart";
 import { QuoteCard } from "@/components/quote-card";
 import { SymbolSearch } from "@/components/symbol-search";
 import { api, ApiError } from "@/lib/api";
@@ -163,6 +164,7 @@ export default function WorkspacePage() {
 
       <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-3">
         <div className="space-y-6 lg:col-span-2">
+          <PriceChart symbol={selectedSymbol} />
           <Panel
             title="Fundamentals"
             isPending={fundamentals.isPending}

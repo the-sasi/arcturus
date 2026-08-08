@@ -138,3 +138,21 @@ Alpha Vantage, NewsAPI; Upstox/Zerodha arrive with Phase 4 broker work.
   ΔE 6.5 → acceptable only with secondary encoding, which every element
   has (▲/▼, signed numbers, slope shape).
 - 57 tests green; gates clean; redeployed in Docker.
+
+## 2026-08-09 — Phase 2 STARTED: M2.1 indicator library + Workspace chart
+
+- Deterministic indicator library in the domain layer (`domain/indicators/`):
+  SMA, EMA (SMA-seeded), RSI (Wilder), MACD (line/signal/histogram),
+  Bollinger bands — pure functions with golden-value tests. Per the
+  blueprint: LLMs will cite these values, never compute them.
+- `GET /api/v1/market/indicators/{symbol}?specs=ema:20,rsi:14` — validated
+  spec grammar (422 on unknown), series aligned 1:1 with candle timestamps.
+- Stock Workspace now has a real price chart: candlesticks + volume,
+  EMA20/EMA50 overlays with legend, RSI(14) pane with 30/70 bands,
+  ranges 1D/6M/1Y/3Y (Lightweight Charts, our data only).
+- Verified live: RELIANCE EMA20 1300.97 < EMA50 1310.43, RSI 58.6.
+- Dev-mode volumes proved out: backend changes needed zero rebuilds
+  (one web-container restart for Turbopack to see the new module).
+- 71 tests green; all gates clean.
+- News multi-source expansion consciously deferred to backlog in favor of
+  Phase 2 (Yahoo adequate for now; port already exists).

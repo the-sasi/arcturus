@@ -38,6 +38,18 @@ entry to "Explore Market".
       selected symbol for this)
 - [ ] Decision hooks: "analyze with my strategy", "add to journal"
 
+## News breadth — multi-source pipeline (deferred 2026-08-09 in favor of Phase 2)
+
+Yahoo-only news is shallow and US-tilted. Plan when picked up:
+- [ ] RSS adapter behind the existing NewsProvider port: Economic Times,
+      Moneycontrol, LiveMint, Business Standard + global macro feeds
+- [ ] Google News RSS per-company query (free, no key, huge breadth)
+- [ ] NSE corporate announcements feed (official filings — high signal)
+- [ ] CompositeNewsProvider: concurrent fan-out, dedupe near-identical
+      headlines, recency sort, Redis 5m TTL
+- [ ] Later with keys: Finnhub (sentiment), Marketaux, NewsAPI
+This merged stream is also the raw input for Phase 3 News Intelligence RAG.
+
 ## Other captured ideas
 - [ ] Scheduled instrument-directory re-sync (listings change; ~monthly)
 - [ ] Provider adapters awaiting user API keys: Finnhub, NewsAPI, Alpha Vantage

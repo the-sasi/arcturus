@@ -5,8 +5,14 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 
-from arcturus_api.api.deps import get_market_service, get_research_service
+from arcturus_api.api.deps import (
+    get_indicator_service,
+    get_market_service,
+    get_research_service,
+)
+from arcturus_api.application.market.indicator_service import IndicatorService
 from arcturus_api.application.market.service import MarketDataService, ResearchDataService
+from arcturus_api.domain.indicators.models import IndicatorSeries, UnknownIndicatorError
 from arcturus_api.domain.market.directory import MoversSnapshot
 from arcturus_api.domain.market.errors import (
     ArticleFetchError,
@@ -25,6 +31,7 @@ router = APIRouter(prefix="/market", tags=["market"])
 
 MarketService = Annotated[MarketDataService, Depends(get_market_service)]
 ResearchService = Annotated[ResearchDataService, Depends(get_research_service)]
+Indicators = Annotated[IndicatorService, Depends(get_indicator_service)]
 
 
 @router.get("/movers")
@@ -92,6 +99,27 @@ async def get_news(
     """Recent news for the instrument, newest first."""
     try:
         return await service.get_news(symbol, limit)
+    except SymbolNotFoundError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    except ProviderUnavailableError as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+
+
+@router.get("/indicators/{symbol}")
+async def get_indicators(
+    symbol: str,
+    service: Indicators,
+    interval: Interval = Interval.DAY_1,
+    specs: Annotated[str, Query(max_length=200)] = "ema:20,ema:50,rsi:14",
+) -> IndicatorSeries:
+    """Deterministic technical indicators aligned with the default candle window.
+
+    ``specs`` is a comma list: ``sma:N``, ``ema:N``, ``rsi:N``, ``bollinger:N``, ``macd``.
+    """
+    try:
+        return await service.compute(symbol, interval, specs.split(","))
+    except UnknownIndicatorError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
     except SymbolNotFoundError as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
     except ProviderUnavailableError as exc:

@@ -75,6 +75,7 @@ FastAPI api (Docker: api, host port 8600)
   │                            · article reader (TTL 24h)
   │     WatchlistService       watchlist CRUD (no cache — source of truth is ours)
   │     InstrumentDirectoryService  browse/search 11k+ listed stocks; sync from exchanges
+  │     IndicatorService       deterministic TA (sma/ema/rsi/macd/bollinger) over cached candles
   ├─ domain/       pure models + ports (zero framework/vendor imports)
   │     ports: MarketDataProvider · FundamentalDataProvider · NewsProvider
   │            · ArticleReader · InstrumentDirectoryProvider · InstrumentRepository
@@ -120,6 +121,8 @@ GET  /health/ready                        readiness (probes TimescaleDB)
 GET  /api/v1/market/quote/{symbol}        symbols are EXCHANGE:TICKER, e.g. NSE:RELIANCE;
                                           indices use INDEX:^NSEI, INDEX:^GSPC, …
 GET  /api/v1/market/movers                top gainers/losers (curated NIFTY-50 + US majors)
+GET  /api/v1/market/indicators/{symbol}?interval=1d&specs=ema:20,rsi:14
+                                          deterministic indicators (sma/ema/rsi/macd/bollinger)
 GET  /api/v1/market/candles/{symbol}?interval=1d
 GET  /api/v1/market/profile/{symbol}
 GET  /api/v1/market/fundamentals/{symbol}

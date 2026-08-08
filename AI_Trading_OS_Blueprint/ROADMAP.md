@@ -14,10 +14,11 @@ phase builds on without redesign.
 - M1.6 — Backend test harness (pytest) + CI-ready lint/typecheck config
 - M1.7 — Persistence layer: SQLAlchemy + Alembic migrations, first domain tables
 
-## Phase 2: Decision Engine
+## Phase 2: Decision Engine (STARTED 2026-08-09)
 
+- M2.1 — Indicator library (SMA/EMA/RSI/MACD/Bollinger — deterministic, never
+  in LLM prompts) + Workspace candlestick chart with indicator overlays
 - Strategy Engine plugin framework (deterministic, versioned strategies)
-- Indicator library (deterministic calculations, never in LLM prompts)
 - Market Intelligence Tier 1 (see BACKLOG.md): movers, sector heatmap,
   screeners, index & breadth — deterministic, feeds off existing data
 - Decision Engine: multi-factor evaluation producing explainable recommendations

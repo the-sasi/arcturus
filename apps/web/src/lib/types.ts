@@ -40,6 +40,13 @@ export type MoversSnapshot = {
   declining: number;
 };
 
+export type IndicatorSeries = {
+  symbol: SymbolRef;
+  interval: string;
+  timestamps: string[];
+  series: Record<string, (number | null)[]>;
+};
+
 export type Instrument = {
   symbol: SymbolRef;
   name: string;

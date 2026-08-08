@@ -8,6 +8,7 @@ from functools import lru_cache
 from fastapi import Request
 
 from arcturus_api.application.market.directory_service import InstrumentDirectoryService
+from arcturus_api.application.market.indicator_service import IndicatorService
 from arcturus_api.application.market.service import MarketDataService, ResearchDataService
 from arcturus_api.application.watchlist.service import WatchlistService
 from arcturus_api.core.config import get_settings
@@ -52,3 +53,8 @@ def get_watchlist_service(request: Request) -> WatchlistService:
 def get_directory_service(request: Request) -> InstrumentDirectoryService:
     service: InstrumentDirectoryService = request.app.state.directory_service
     return service
+
+
+@lru_cache
+def get_indicator_service() -> IndicatorService:
+    return IndicatorService(get_market_service())
