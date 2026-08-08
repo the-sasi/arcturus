@@ -60,6 +60,32 @@ export type StrategyVerdict = {
   as_of: string;
 };
 
+export type BacktestTrade = {
+  entry_date: string;
+  entry_price: number;
+  exit_date: string;
+  exit_price: number;
+  exit_reason: "stop" | "signal_flip" | "end_of_data";
+  return_pct: number;
+};
+
+export type BacktestResult = {
+  strategy: StrategyMetadata;
+  symbol: SymbolRef;
+  start: string;
+  end: string;
+  bars: number;
+  trades: BacktestTrade[];
+  total_return_pct: number;
+  buy_hold_return_pct: number;
+  win_rate_pct: number | null;
+  average_win_pct: number | null;
+  average_loss_pct: number | null;
+  max_drawdown_pct: number;
+  exposure_pct: number;
+  annualized_sharpe: number | null;
+};
+
 export type IndicatorSeries = {
   symbol: SymbolRef;
   interval: string;

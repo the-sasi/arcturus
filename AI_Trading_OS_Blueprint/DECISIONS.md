@@ -85,3 +85,22 @@ translate to vendor-specific tickers (e.g. `NSE:RELIANCE` → `RELIANCE.NS` for 
 
 **Consequences.** New asset classes are additive. Vendor symbol quirks are quarantined
 in adapters.
+
+---
+
+## ADR-007: Custom prefix-replay backtester instead of OSS engines (Accepted, 2026-08-09)
+
+**Context.** M2.2b needs backtesting. Candidates: `backtesting.py`, `vectorbt`, or
+custom. Both OSS engines require strategies to be re-written in their own idioms
+(their Strategy subclass / vectorized signal arrays) — duplicating every rule that
+already lives in our plugin contract, creating two sources of truth per strategy.
+
+**Decision.** A minimal in-domain replay engine: walk the candle history bar by bar,
+call `strategy.evaluate(prefix)` exactly as production does, simulate entries at next
+open, ATR-stop and stance-flip exits, percent costs per side. No-lookahead holds by
+construction because the strategy only ever receives past candles.
+
+**Consequences.** One source of truth: the deployed strategy IS the backtested
+strategy. O(n²) replay is acceptable at daily frequency (~750 bars); results cached
+in Redis. If Tier 2 needs vectorized speed (universe-wide scans), revisit vectorbt
+as an *additional* fast path — never as the primary definition of a strategy.

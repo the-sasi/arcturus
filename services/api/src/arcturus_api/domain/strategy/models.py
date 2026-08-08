@@ -54,6 +54,12 @@ class StrategyVerdict(BaseModel):
     as_of: datetime
 
 
+class UnknownStrategyError(Exception):
+    def __init__(self, key: str, available: list[str]) -> None:
+        super().__init__(f"Unknown strategy '{key}'. Available: {', '.join(available)}")
+        self.key = key
+
+
 class InsufficientHistoryError(Exception):
     def __init__(self, strategy_key: str, needed: int, got: int) -> None:
         super().__init__(f"Strategy '{strategy_key}' needs {needed} candles, got {got}")

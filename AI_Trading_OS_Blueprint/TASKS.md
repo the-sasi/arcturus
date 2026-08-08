@@ -2,11 +2,22 @@
 
 ## Phase 2 — Decision Engine
 
-### M2.2b Strategy Engine hardening (next)
-- [ ] Backtesting engine with realistic costs + walk-forward validation
+### M2.2b remaining (next)
 - [ ] Regime filter (index vs 200-DMA, breadth) gating strategy confidence
 - [ ] Volatility-based position sizing suggestions
+- [ ] Strategy signal markers on the Workspace chart
 - [ ] Tier 2 strategies: cross-sectional momentum, multi-factor ranking, pairs
+
+### Done (2026-08-09) — M2.2b Backtester
+- [x] ADR-007: custom prefix-replay engine (one source of truth; no-lookahead
+      by construction) over OSS engines requiring rule duplication
+- [x] Engine: next-open fills, intraday ATR stops with gap handling,
+      signal-flip exits, per-side costs, equity curve
+- [x] Metrics: return vs buy&hold, win rate, avg win/loss, max drawdown,
+      exposure, annualized Sharpe
+- [x] GET /api/v1/strategies/backtest/{symbol}?strategy=key (Redis 1h)
+- [x] Workspace Backtests panel (3y table per strategy, cost disclaimer)
+- [x] 7 hand-checkable engine tests via scripted strategy
 
 ### Done (2026-08-09) — M2.2 Strategy Engine core
 - [x] Strategy plugin contract (deterministic, versioned; stance/confidence/

@@ -10,6 +10,7 @@ from fastapi import Request
 from arcturus_api.application.market.directory_service import InstrumentDirectoryService
 from arcturus_api.application.market.indicator_service import IndicatorService
 from arcturus_api.application.market.service import MarketDataService, ResearchDataService
+from arcturus_api.application.strategy.backtest_service import BacktestService
 from arcturus_api.application.strategy.service import StrategyService
 from arcturus_api.application.watchlist.service import WatchlistService
 from arcturus_api.core.config import get_settings
@@ -64,3 +65,8 @@ def get_indicator_service() -> IndicatorService:
 @lru_cache
 def get_strategy_service() -> StrategyService:
     return StrategyService(get_market_service())
+
+
+@lru_cache
+def get_backtest_service() -> BacktestService:
+    return BacktestService(get_market_service(), cache=get_cache())

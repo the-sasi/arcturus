@@ -78,6 +78,7 @@ FastAPI api (Docker: api, host port 8600)
   │     IndicatorService       deterministic TA (sma/ema/rsi/macd/bollinger/atr) over cached candles
   │     StrategyService        versioned strategy plugins -> explainable verdicts
   │                            (ema_crossover · rsi_mean_reversion · range_breakout)
+  │     BacktestService        prefix-replay backtests, realistic costs, 1h cache
   ├─ domain/       pure models + ports (zero framework/vendor imports)
   │     ports: MarketDataProvider · FundamentalDataProvider · NewsProvider
   │            · ArticleReader · InstrumentDirectoryProvider · InstrumentRepository
@@ -128,6 +129,8 @@ GET  /api/v1/market/indicators/{symbol}?interval=1d&specs=ema:20,rsi:14
 GET  /api/v1/strategies                   registered strategy plugins + metadata
 GET  /api/v1/strategies/evaluate/{symbol} run all strategies -> explainable verdicts
                                           (stance/confidence/entry/stop/reasons)
+GET  /api/v1/strategies/backtest/{symbol}?strategy=key
+                                          3y prefix-replay backtest with costs (ADR-007)
 GET  /api/v1/market/candles/{symbol}?interval=1d
 GET  /api/v1/market/profile/{symbol}
 GET  /api/v1/market/fundamentals/{symbol}

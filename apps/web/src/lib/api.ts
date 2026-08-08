@@ -1,5 +1,6 @@
 import type {
   ArticleContent,
+  BacktestResult,
   CandleSeries,
   CompanyProfile,
   Fundamentals,
@@ -58,6 +59,11 @@ export const api = {
 
   evaluateStrategies: (symbol: string) =>
     request<StrategyVerdict[]>(`/api/v1/strategies/evaluate/${encodeURIComponent(symbol)}`),
+
+  backtestStrategy: (symbol: string, strategyKey: string) =>
+    request<BacktestResult>(
+      `/api/v1/strategies/backtest/${encodeURIComponent(symbol)}?strategy=${encodeURIComponent(strategyKey)}`,
+    ),
 
   getIndicators: (symbol: string, interval = "1d", specs = "ema:20,ema:50,rsi:14") =>
     request<IndicatorSeries>(

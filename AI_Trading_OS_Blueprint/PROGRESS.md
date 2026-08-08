@@ -177,3 +177,16 @@ Alpha Vantage, NewsAPI; Upstox/Zerodha arrive with Phase 4 broker work.
 - 80 tests green (9 golden strategy scenarios); all gates clean.
 - Next: M2.2b — backtester with realistic costs + walk-forward validation,
   regime filter, position sizing; then Tier 2 quant strategies.
+
+## 2026-08-09 — M2.2b Backtester (prefix-replay, ADR-007)
+
+- Custom prefix-replay engine instead of backtesting.py/vectorbt: the deployed
+  strategy IS the backtested strategy (no rule duplication); no lookahead by
+  construction. Next-open fills, intraday stops with gap-through handling,
+  signal-flip exits, 0.2%/side costs, full metrics + Sharpe.
+- Endpoint + Workspace "Backtests · last 3 years" table per strategy.
+- First real results (3y): honest and instructive —
+  TCS ema_crossover +12.9% vs buy-hold −27.5% (trend-following avoided the
+  decline); RELIANCE range_breakout −3.8% vs +15.7% (this strategy earns no
+  keep on this stock). Exactly the falsifiability the platform promised.
+- 87 tests green; all gates clean.
