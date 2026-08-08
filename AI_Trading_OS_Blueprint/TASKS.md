@@ -16,6 +16,13 @@
 
 ## Done (2026-08-09)
 
+### Stock directory + Market Intelligence explorer
+- [x] Instruments table (migration 0002) + repository port/adapter
+- [x] Exchange directory adapters: NSE CSV + Nasdaq Trader (11,178 instruments seeded)
+- [x] GET /api/v1/instruments (search/filter/paginate) + POST /instruments/sync
+- [x] Market Intelligence page: browse/search whole market, click-through to Workspace
+- [x] Workspace autocomplete by company name + popular-stock chips
+
 ### Speed + in-app reader + Docker deployment
 - [x] Redis read-through cache (fail-open) across market/research services
 - [x] ArticleReader port + trafilatura adapter, SSRF-guarded, 24h article cache

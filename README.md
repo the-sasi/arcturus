@@ -50,8 +50,8 @@ Browser (localhost:3000)
   │  TanStack Query polling + Zustand workspace context
   ▼
 Next.js 16 web (Docker: web)                       Live pages:
-  │  REST, JSON                                    Dashboard · Watchlists · Stock Workspace
-  ▼
+  │  REST, JSON                                    Dashboard · Market Intelligence (stock
+  ▼                                                explorer) · Stock Workspace · Watchlists
 FastAPI api (Docker: api, host port 8600)
   │
   ├─ api/          versioned HTTP layer, domain errors → 4xx/5xx
@@ -60,14 +60,17 @@ FastAPI api (Docker: api, host port 8600)
   │     ResearchDataService    profile/fundamentals (TTL 1h) · news (TTL 5m)
   │                            · article reader (TTL 24h)
   │     WatchlistService       watchlist CRUD (no cache — source of truth is ours)
+  │     InstrumentDirectoryService  browse/search 11k+ listed stocks; sync from exchanges
   ├─ domain/       pure models + ports (zero framework/vendor imports)
   │     ports: MarketDataProvider · FundamentalDataProvider · NewsProvider
-  │            · ArticleReader · WatchlistRepository · CachePort
+  │            · ArticleReader · InstrumentDirectoryProvider · InstrumentRepository
+  │            · WatchlistRepository · CachePort
   └─ infrastructure/  adapters (the ONLY layer touching vendors)
         yahoo (yfinance)      → implements market/fundamental/news ports
         trafilatura reader    → reader-mode article extraction + SSRF guard
+        exchange directories  → NSE EQUITY_L.csv + Nasdaq Trader symbol files
         redis cache           → fail-open JSON cache
-        sqlalchemy repository → watchlists in TimescaleDB (Alembic migrations)
+        sqlalchemy repos      → watchlists + instruments in TimescaleDB (Alembic)
 
 Data stores (Docker):  TimescaleDB :5432 (in use) · Redis :6379 (in use)
                        Qdrant :6333, Neo4j :7687, MinIO :9000 (provisioned for
@@ -89,6 +92,8 @@ live behind adapters, providers are swappable via env config
 | 4 | Yahoo Finance — news feed (`Ticker.get_news`) | `yahoo/adapter.py` | `GET /api/v1/market/news/{symbol}` | Redis 5m |
 | 5 | Arbitrary news-publisher pages (httpx GET, 8s timeout, 3MB cap, SSRF-guarded to public http/https only) | `trafilatura_reader.py` | `GET /api/v1/market/news/article?url=` | Redis 24h |
 | 6 | Publisher image CDNs (news thumbnails / hero images) | browser `<img>` tags | rendering Workspace news | browser cache |
+| 7 | NSE archives — `EQUITY_L.csv` (all NSE-listed equities) | `directories/adapters.py` | `POST /api/v1/instruments/sync` (manual/on-demand only) | persisted to DB |
+| 8 | Nasdaq Trader symbol directory — `nasdaqlisted.txt`, `otherlisted.txt` (NASDAQ/NYSE/AMEX) | `directories/adapters.py` | `POST /api/v1/instruments/sync` (manual/on-demand only) | persisted to DB |
 
 No other outbound calls exist. No telemetry, no third-party analytics. All
 external data is delayed/unofficial (Yahoo) — not for latency-sensitive trading.
@@ -104,6 +109,8 @@ GET  /api/v1/market/profile/{symbol}
 GET  /api/v1/market/fundamentals/{symbol}
 GET  /api/v1/market/news/{symbol}?limit=10
 GET  /api/v1/market/news/article?url=     in-app reader-mode extraction
+GET  /api/v1/instruments?query=&exchange=&limit=&offset=   browse/search all listed stocks
+POST /api/v1/instruments/sync             refresh universe from official exchange listings
 GET/POST        /api/v1/watchlists
 GET/DELETE      /api/v1/watchlists/{id}
 POST            /api/v1/watchlists/{id}/items

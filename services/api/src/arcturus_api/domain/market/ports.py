@@ -14,7 +14,14 @@ from arcturus_api.domain.market.fundamentals import (
     Fundamentals,
     NewsArticle,
 )
-from arcturus_api.domain.market.models import CandleSeries, Interval, Quote, Symbol
+from arcturus_api.domain.market.models import (
+    CandleSeries,
+    Exchange,
+    Instrument,
+    Interval,
+    Quote,
+    Symbol,
+)
 
 
 class MarketDataProvider(ABC):
@@ -69,3 +76,31 @@ class ArticleReader(ABC):
     @abstractmethod
     async def read(self, url: str) -> ArticleContent:
         """Fetch and extract the article. Raises ArticleFetchError on failure."""
+
+
+class InstrumentDirectoryProvider(ABC):
+    """Port for fetching an exchange's official listing directory."""
+
+    name: str
+
+    @abstractmethod
+    async def fetch_listings(self) -> list[Instrument]:
+        """Download and parse the full listing. Raises ProviderUnavailableError."""
+
+
+class InstrumentRepository(ABC):
+    """Port for the persisted instrument universe."""
+
+    @abstractmethod
+    async def search(
+        self,
+        query: str | None,
+        exchange: Exchange | None,
+        limit: int,
+        offset: int,
+    ) -> tuple[list[Instrument], int]:
+        """Return (matching instruments ordered by symbol, total match count)."""
+
+    @abstractmethod
+    async def upsert_many(self, instruments: list[Instrument]) -> int:
+        """Insert or update by symbol; returns number written."""

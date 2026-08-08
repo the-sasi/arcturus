@@ -8,7 +8,7 @@ import { usePathname } from "next/navigation";
 const MODULES: { label: string; href: string; ready: boolean }[] = [
   { label: "Dashboard", href: "/", ready: true },
   { label: "AI Copilot", href: "/copilot", ready: false },
-  { label: "Market Intelligence", href: "/market", ready: false },
+  { label: "Market Intelligence", href: "/market", ready: true },
   { label: "News Intelligence", href: "/news", ready: false },
   { label: "Decision Center", href: "/decisions", ready: false },
   { label: "Stock Workspace", href: "/workspace", ready: true },

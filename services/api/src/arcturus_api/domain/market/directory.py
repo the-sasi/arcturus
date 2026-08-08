@@ -1,0 +1,22 @@
+"""Instrument directory domain: browsing/searching the listed universe."""
+
+from pydantic import BaseModel, ConfigDict
+
+from arcturus_api.domain.market.models import Instrument
+
+
+class InstrumentPage(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    items: list[Instrument]
+    total: int
+    limit: int
+    offset: int
+
+
+class DirectorySyncResult(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    source: str
+    fetched: int
+    upserted: int

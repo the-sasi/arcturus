@@ -3,6 +3,7 @@ import type {
   CandleSeries,
   CompanyProfile,
   Fundamentals,
+  InstrumentPage,
   NewsArticle,
   Quote,
   Watchlist,
@@ -49,6 +50,20 @@ export const api = {
     request<CandleSeries>(
       `/api/v1/market/candles/${encodeURIComponent(symbol)}?interval=${interval}`,
     ),
+
+  searchInstruments: (params: {
+    query?: string;
+    exchange?: string;
+    limit?: number;
+    offset?: number;
+  }) => {
+    const search = new URLSearchParams();
+    if (params.query) search.set("query", params.query);
+    if (params.exchange) search.set("exchange", params.exchange);
+    search.set("limit", String(params.limit ?? 50));
+    search.set("offset", String(params.offset ?? 0));
+    return request<InstrumentPage>(`/api/v1/instruments?${search.toString()}`);
+  },
 
   getProfile: (symbol: string) =>
     request<CompanyProfile>(`/api/v1/market/profile/${encodeURIComponent(symbol)}`),

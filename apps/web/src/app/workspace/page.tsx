@@ -4,12 +4,26 @@ import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { ArticleReader } from "@/components/article-reader";
 import { QuoteCard } from "@/components/quote-card";
+import { SymbolSearch } from "@/components/symbol-search";
 import { api, ApiError } from "@/lib/api";
 import { useWorkspaceStore } from "@/lib/store";
 import type { Fundamentals, NewsArticle } from "@/lib/types";
 
 /* eslint-disable @next/next/no-img-element -- publisher thumbnails come from
    arbitrary hosts; next/image would need per-domain config */
+
+const POPULAR_SYMBOLS = [
+  { symbol: "NSE:RELIANCE", label: "Reliance" },
+  { symbol: "NSE:TCS", label: "TCS" },
+  { symbol: "NSE:HDFCBANK", label: "HDFC Bank" },
+  { symbol: "NSE:INFY", label: "Infosys" },
+  { symbol: "NSE:TATAMOTORS", label: "Tata Motors" },
+  { symbol: "NSE:SBIN", label: "SBI" },
+  { symbol: "NASDAQ:AAPL", label: "Apple" },
+  { symbol: "NASDAQ:MSFT", label: "Microsoft" },
+  { symbol: "NASDAQ:NVDA", label: "Nvidia" },
+  { symbol: "NASDAQ:TSLA", label: "Tesla" },
+];
 
 function humanize(value: number | null): string {
   if (value === null) return "—";
@@ -98,7 +112,6 @@ function Panel({
 export default function WorkspacePage() {
   const selectedSymbol = useWorkspaceStore((state) => state.selectedSymbol);
   const setSelectedSymbol = useWorkspaceStore((state) => state.setSelectedSymbol);
-  const [input, setInput] = useState(selectedSymbol);
   const [openArticle, setOpenArticle] = useState<NewsArticle | null>(null);
 
   const profile = useQuery({
@@ -128,26 +141,24 @@ export default function WorkspacePage() {
             {profile.data?.industry ? ` · ${profile.data.industry}` : ""}
           </p>
         </div>
-        <form
-          className="flex gap-2"
-          onSubmit={(event) => {
-            event.preventDefault();
-            if (input.trim()) setSelectedSymbol(input.trim().toUpperCase());
-          }}
-        >
-          <input
-            value={input}
-            onChange={(event) => setInput(event.target.value)}
-            placeholder="EXCHANGE:TICKER"
-            className="w-56 rounded-md border border-neutral-700 bg-neutral-900 px-3 py-1.5 text-sm placeholder:text-neutral-600 focus:border-neutral-500 focus:outline-none"
-          />
+        <SymbolSearch onSelect={setSelectedSymbol} />
+      </div>
+
+      <div className="mt-4 flex flex-wrap items-center gap-1.5">
+        <span className="text-xs text-neutral-600">Popular:</span>
+        {POPULAR_SYMBOLS.map((popular) => (
           <button
-            type="submit"
-            className="rounded-md bg-neutral-100 px-3 py-1.5 text-sm font-medium text-neutral-900 hover:bg-white"
+            key={popular.symbol}
+            onClick={() => setSelectedSymbol(popular.symbol)}
+            className={`rounded-full px-2.5 py-0.5 text-xs ${
+              selectedSymbol === popular.symbol
+                ? "bg-neutral-100 font-medium text-neutral-900"
+                : "border border-neutral-800 text-neutral-400 hover:bg-neutral-900"
+            }`}
           >
-            Load
+            {popular.label}
           </button>
-        </form>
+        ))}
       </div>
 
       <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-3">

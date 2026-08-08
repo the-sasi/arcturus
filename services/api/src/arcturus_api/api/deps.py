@@ -7,6 +7,7 @@ from functools import lru_cache
 
 from fastapi import Request
 
+from arcturus_api.application.market.directory_service import InstrumentDirectoryService
 from arcturus_api.application.market.service import MarketDataService, ResearchDataService
 from arcturus_api.application.watchlist.service import WatchlistService
 from arcturus_api.core.config import get_settings
@@ -45,4 +46,9 @@ def get_research_service() -> ResearchDataService:
 def get_watchlist_service(request: Request) -> WatchlistService:
     # Session factory is created once in the app lifespan (main.py).
     service: WatchlistService = request.app.state.watchlist_service
+    return service
+
+
+def get_directory_service(request: Request) -> InstrumentDirectoryService:
+    service: InstrumentDirectoryService = request.app.state.directory_service
     return service

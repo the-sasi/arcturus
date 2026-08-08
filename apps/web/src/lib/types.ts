@@ -31,6 +31,20 @@ export type CandleSeries = {
   candles: Candle[];
 };
 
+export type Instrument = {
+  symbol: SymbolRef;
+  name: string;
+  asset_class: string;
+  currency: string;
+};
+
+export type InstrumentPage = {
+  items: Instrument[];
+  total: number;
+  limit: number;
+  offset: number;
+};
+
 export type CompanyProfile = {
   symbol: SymbolRef;
   name: string;

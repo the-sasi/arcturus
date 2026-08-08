@@ -95,3 +95,18 @@ Alpha Vantage, NewsAPI; Upstox/Zerodha arrive with Phase 4 broker work.
 - README now carries the complete architecture + external-calls table;
   standing rule: update it in the same commit as any code change.
 - 46 tests green; all quality gates clean.
+
+## 2026-08-09 — Stock directory: browse the whole market (for beginners)
+
+- Instruments table (migration 0002) seeded from official exchange listings:
+  NSE EQUITY_L.csv (2,369 equities) + Nasdaq Trader symbol directory
+  (8,809 NASDAQ/NYSE/AMEX stocks & ETFs) = 11,178 instruments.
+- New ports: InstrumentDirectoryProvider (per-exchange listing fetchers,
+  fail-independent sync) + InstrumentRepository (search/paginate/upsert).
+- Endpoints: GET /api/v1/instruments (search by name/ticker, exchange filter,
+  pagination), POST /api/v1/instruments/sync.
+- Market Intelligence module is live (4th page): full stock explorer —
+  search "tata" → 13 NSE companies; click any row → Stock Workspace.
+- Workspace symbol input replaced with name-based autocomplete + popular
+  stock chips (Reliance, TCS, Apple, Nvidia, …) for newcomers.
+- 54 tests green; all gates clean; full stack redeployed in Docker.

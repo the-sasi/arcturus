@@ -24,6 +24,21 @@ class Base(DeclarativeBase):
     metadata = MetaData(naming_convention=NAMING_CONVENTION)
 
 
+class InstrumentRow(Base):
+    __tablename__ = "instruments"
+
+    # Canonical "EXCHANGE:TICKER" string, e.g. "NSE:RELIANCE"
+    symbol: Mapped[str] = mapped_column(String(40), primary_key=True)
+    exchange: Mapped[str] = mapped_column(String(16), index=True)
+    ticker: Mapped[str] = mapped_column(String(24))
+    name: Mapped[str] = mapped_column(String(255), index=True)
+    asset_class: Mapped[str] = mapped_column(String(16))
+    currency: Mapped[str] = mapped_column(String(8))
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
+    )
+
+
 class WatchlistRow(Base):
     __tablename__ = "watchlists"
 
