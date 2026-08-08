@@ -104,3 +104,33 @@ construction because the strategy only ever receives past candles.
 strategy. O(n²) replay is acceptable at daily frequency (~750 bars); results cached
 in Redis. If Tier 2 needs vectorized speed (universe-wide scans), revisit vectorbt
 as an *additional* fast path — never as the primary definition of a strategy.
+
+---
+
+## ADR-008: Research plane & controlled self-improvement (Accepted, 2026-08-09)
+
+**Context.** Arcturus is evolving into a quantitative research platform that
+evaluates and improves its own strategies, tools, and data. Uncontrolled
+self-modification in a trading system is unacceptable.
+
+**Decision.**
+1. Two planes: a RESEARCH plane (discovery, experiments, validation, registry)
+   and a DECISION/EXECUTION plane. Research jobs are isolated from execution.
+2. The only self-improvement path is: observation → evaluation → improvement
+   proposal → experiment → validation → **human approval** → deployment.
+   Statuses: PROPOSED / EXPERIMENT / VALIDATING / APPROVED / REJECTED / ROLLED_BACK.
+3. Every research result is reproducible: experiments record strategy version,
+   dataset window, config, engine version, and metrics (registry from R1 on).
+4. LLMs (when they arrive, Phase 3) reason, summarize, hypothesize, and explain;
+   deterministic code owns every number (P&L, risk, sizing, metrics). Agents
+   reach tools only through a gateway (authz → schema validation → rate limit
+   → audit), default READ_ONLY.
+5. **Never self-modifiable**: risk limits, kill-switch behavior, broker
+   credentials, user permissions, KYC/compliance rules, production deployment
+   permissions, live-trading authorization. Safe self-healing is limited to
+   infrastructure remedies (retries, cache refresh, reconnects, fallback
+   providers, disabling failing research jobs) and every action is logged.
+
+**Consequences.** Slower "autonomy" than naive agent designs, by design. The
+phased plan lives in RESEARCH_PLATFORM_PLAN.md; each phase updates docs and
+passes all quality gates.

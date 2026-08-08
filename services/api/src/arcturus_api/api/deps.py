@@ -73,6 +73,7 @@ def get_strategy_service() -> StrategyService:
     return StrategyService(get_market_service(), regime=get_regime_service())
 
 
-@lru_cache
-def get_backtest_service() -> BacktestService:
-    return BacktestService(get_market_service(), cache=get_cache())
+def get_backtest_service(request: Request) -> BacktestService:
+    # Built in the app lifespan so it can record experiments (needs the DB)
+    service: BacktestService = request.app.state.backtest_service
+    return service

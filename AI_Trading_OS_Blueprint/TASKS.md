@@ -1,5 +1,21 @@
 # Tasks
 
+## Phase 2R — Quant Research Platform (see RESEARCH_PLATFORM_PLAN.md)
+
+### R2 Data Quality Engine (next)
+- [ ] Deterministic candle validation (OHLC sanity, gaps, duplicates, staleness)
+- [ ] VALID/WARNING/INVALID status; backtester refuses INVALID input
+- [ ] Quality status recorded on experiments
+
+### Done (2026-08-09) — R1 Experiment Registry + fitness metrics
+- [x] Architecture audit + phased plan (RESEARCH_PLATFORM_PLAN.md); ADR-008
+- [x] Metrics added: Sortino, Calmar, profit factor, expectancy;
+      engine versioned (1.1.0); results carry validation="in-sample-only"
+- [x] experiments table (migration 0003) + repository port/adapter
+- [x] BacktestService records every fresh run (fail-open)
+- [x] GET /api/v1/research/experiments[/{id}]
+- [x] 103 tests green
+
 ## Phase 2 — Decision Engine
 
 ### M2.2b remaining (next)

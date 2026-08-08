@@ -78,7 +78,9 @@ FastAPI api (Docker: api, host port 8600)
   │     IndicatorService       deterministic TA (sma/ema/rsi/macd/bollinger/atr) over cached candles
   │     StrategyService        versioned strategy plugins -> explainable verdicts
   │                            (ema_crossover · rsi_mean_reversion · range_breakout)
-  │     BacktestService        prefix-replay backtests, realistic costs, 1h cache
+  │     BacktestService        prefix-replay backtests, realistic costs, 1h cache;
+  │                            records every fresh run to the Experiment Registry
+  │                            (Sharpe/Sortino/Calmar/profit factor/expectancy)
   │     RegimeService          benchmark-index health; gates bullish strategy
   │                            confidence (risk-off trims trend/breakout signals)
   ├─ domain/       pure models + ports (zero framework/vendor imports)
@@ -134,7 +136,10 @@ GET  /api/v1/strategies                   registered strategy plugins + metadata
 GET  /api/v1/strategies/evaluate/{symbol} run all strategies -> explainable verdicts
                                           (stance/confidence/entry/stop/reasons)
 GET  /api/v1/strategies/backtest/{symbol}?strategy=key
-                                          3y prefix-replay backtest with costs (ADR-007)
+                                          3y prefix-replay backtest with costs (ADR-007);
+                                          every fresh run recorded as an experiment
+GET  /api/v1/research/experiments?strategy=&symbol=   experiment registry (ADR-008)
+GET  /api/v1/research/experiments/{id}    one experiment: config, metrics, provenance
 GET  /api/v1/market/candles/{symbol}?interval=1d
 GET  /api/v1/market/profile/{symbol}
 GET  /api/v1/market/fundamentals/{symbol}

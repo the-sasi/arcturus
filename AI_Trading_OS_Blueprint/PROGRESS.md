@@ -202,3 +202,20 @@ Alpha Vantage, NewsAPI; Upstox/Zerodha arrive with Phase 4 broker work.
   75 → 60 with the reason stated.
 - Regime badge (☀️/⛅/⛈️ + text) in the Workspace Strategy panel.
 - 96 tests green; all gates clean.
+
+## 2026-08-09 — Phase 2R kickoff: audit + R1 Experiment Registry
+
+- Received the quant-research/self-improvement directive; produced the full
+  capability audit + 9-phase plan (RESEARCH_PLATFORM_PLAN.md) and ADR-008
+  (research plane, human-approval improvement loop, hard safety boundary).
+- R1 shipped:
+  - Fitness metrics expanded: Sortino, Calmar, profit factor, expectancy;
+    backtest engine versioned (1.1.0); results marked "in-sample-only"
+    until the R4 validation ladder exists (honesty marker).
+  - Experiment Registry: every fresh backtest run persisted (strategy
+    version, dataset window, config, engine version, metrics) — append-only,
+    reproducible, queryable via /api/v1/research/experiments.
+  - Verified live: TCS ema_crossover run recorded with Sortino 0.69,
+    Calmar 0.35, profit factor 3.31, expectancy +2.16%/trade.
+- 103 tests green; all gates clean; migration 0003 applied.
+- Next: R2 Data Quality Engine.

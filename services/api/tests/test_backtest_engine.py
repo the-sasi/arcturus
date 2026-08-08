@@ -175,3 +175,29 @@ class TestBacktestEngine:
         rows = [FLAT, FLAT, (100, 101, 99, 100)] + [(110, 111, 109, 110)] * 3
         result = run_backtest(ScriptedStrategy({}), make_series(rows), ZERO_COST)
         assert result.buy_hold_return_pct == 10.0
+
+
+class TestFitnessMetrics:
+    def test_single_win_expectancy_and_no_profit_factor(self) -> None:
+        rows = [FLAT, FLAT, FLAT, FLAT, (100, 111, 99, 110)]
+        script = {3: (Stance.BULLISH, 70, None), 4: (Stance.BULLISH, 70, None)}
+        result = run_backtest(ScriptedStrategy(script), make_series(rows), ZERO_COST)
+        assert result.expectancy_pct == 10.0
+        assert result.profit_factor is None  # no losing trades to divide by
+
+    def test_single_loss_zero_profit_factor(self) -> None:
+        rows = [FLAT, FLAT, FLAT, FLAT, (100, 101, 98, 99), (99, 100, 96, 97), (90, 92, 88, 91)]
+        script = {
+            3: (Stance.BULLISH, 70, 95.0),
+            4: (Stance.BULLISH, 70, 95.0),
+            5: (Stance.BULLISH, 70, 95.0),
+        }
+        result = run_backtest(ScriptedStrategy(script), make_series(rows), ZERO_COST)
+        assert result.profit_factor == 0.0
+        assert result.expectancy_pct == -10.0
+
+    def test_ratios_none_on_short_series(self) -> None:
+        result = run_backtest(ScriptedStrategy({}), make_series([FLAT] * 12), ZERO_COST)
+        assert result.annualized_sortino is None
+        assert result.calmar is None
+        assert result.validation == "in-sample-only"

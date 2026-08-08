@@ -23,6 +23,9 @@ from arcturus_api.domain.strategy.models import InsufficientHistoryError, Stance
 
 _TRADING_DAYS_PER_YEAR = 252
 
+# Bump when execution/metric semantics change — recorded on every experiment
+ENGINE_VERSION = "1.1.0"
+
 
 def run_backtest(
     strategy: Strategy, candles: CandleSeries, config: BacktestConfig | None = None
@@ -138,6 +141,12 @@ def run_backtest(
         max_drawdown_pct=round(_max_drawdown(equity_curve), 2),
         exposure_pct=round(bars_in_position / len(equity_curve) * 100, 1),
         annualized_sharpe=_sharpe(equity_curve),
+        annualized_sortino=_sortino(equity_curve),
+        calmar=_calmar(equity, equity_curve),
+        profit_factor=_profit_factor(wins, losses),
+        expectancy_pct=(
+            round(sum(t.return_pct for t in trades) / len(trades), 3) if trades else None
+        ),
     )
 
 
@@ -169,6 +178,45 @@ def _max_drawdown(equity_curve: list[float]) -> float:
         peak = max(peak, value)
         worst = min(worst, (value / peak - 1) * 100)
     return worst
+
+
+def _daily_returns(equity_curve: list[float]) -> list[float]:
+    return [
+        equity_curve[index] / equity_curve[index - 1] - 1 for index in range(1, len(equity_curve))
+    ]
+
+
+def _sortino(equity_curve: list[float]) -> float | None:
+    """Sharpe's fairer cousin: only downside volatility counts as risk."""
+    if len(equity_curve) < 30:
+        return None
+    daily = _daily_returns(equity_curve)
+    downside = [value for value in daily if value < 0]
+    if not downside:
+        return None
+    downside_dev = math.sqrt(sum(value**2 for value in downside) / len(daily))
+    if downside_dev == 0:
+        return None
+    mean = sum(daily) / len(daily)
+    return round(mean / downside_dev * math.sqrt(_TRADING_DAYS_PER_YEAR), 2)
+
+
+def _calmar(final_equity: float, equity_curve: list[float]) -> float | None:
+    """Annualized return per unit of worst pain (max drawdown)."""
+    drawdown = _max_drawdown(equity_curve)
+    if drawdown == 0 or len(equity_curve) < 30 or final_equity <= 0:
+        return None
+    years = len(equity_curve) / _TRADING_DAYS_PER_YEAR
+    # float(...) because typeshed types float.__pow__ as Any (complex corner case)
+    annualized = (float(final_equity ** (1 / years)) - 1) * 100
+    return round(annualized / abs(drawdown), 2)
+
+
+def _profit_factor(wins: list[float], losses: list[float]) -> float | None:
+    gross_loss = abs(sum(losses))
+    if gross_loss == 0:
+        return None
+    return round(sum(wins) / gross_loss, 2)
 
 
 def _sharpe(equity_curve: list[float]) -> float | None:

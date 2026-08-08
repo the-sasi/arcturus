@@ -48,3 +48,9 @@ class BacktestResult(BaseModel):
     max_drawdown_pct: float  # worst peak-to-trough of strategy equity
     exposure_pct: float  # share of bars spent in a position
     annualized_sharpe: float | None  # from daily equity returns; None if degenerate
+    annualized_sortino: float | None  # like Sharpe, but only downside deviation
+    calmar: float | None  # annualized return / |max drawdown|
+    profit_factor: float | None  # gross wins / gross losses; None without losses
+    expectancy_pct: float | None  # mean return per trade; None without trades
+    # Honesty marker until the R4 validation ladder lands (ADR-008)
+    validation: str = "in-sample-only"

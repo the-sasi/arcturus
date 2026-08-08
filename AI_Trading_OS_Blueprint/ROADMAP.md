@@ -24,6 +24,15 @@ phase builds on without redesign.
 - Decision Engine: multi-factor evaluation producing explainable recommendations
 - LangGraph Supervisor + first specialist agents (Technical, Risk, Explanation)
 
+## Phase 2R: Quant Research Platform (STARTED 2026-08-09; plan + audit in
+RESEARCH_PLATFORM_PLAN.md, governed by ADR-008)
+
+- R1 ✔ Experiment Registry + full fitness metrics
+- R2 Data Quality Engine · R3 Strategy Registry v2 · R4 Validation ladder
+- R5 Degradation monitor + scheduler · R6 Improvement proposals (human approval)
+- R7 Decision memory · R8 Research UI · R9 Discovery engine
+- Phase 3 gate: Tool Registry + Gateway before any agent ships
+
 ## Phase 3: Research
 
 - News Intelligence pipeline + first RAG pipeline (news)

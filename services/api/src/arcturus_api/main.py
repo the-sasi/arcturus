@@ -8,13 +8,16 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from arcturus_api import __version__
+from arcturus_api.api.deps import get_cache, get_market_service
 from arcturus_api.api.v1 import health
 from arcturus_api.api.v1.router import router as v1_router
 from arcturus_api.application.market.directory_service import InstrumentDirectoryService
+from arcturus_api.application.strategy.backtest_service import BacktestService
 from arcturus_api.application.watchlist.service import WatchlistService
 from arcturus_api.core.config import get_settings
 from arcturus_api.core.logging import configure_logging
 from arcturus_api.infrastructure.db.engine import build_engine, build_session_factory
+from arcturus_api.infrastructure.db.experiment_repository import SqlAlchemyExperimentRepository
 from arcturus_api.infrastructure.db.instrument_repository import SqlAlchemyInstrumentRepository
 from arcturus_api.infrastructure.db.watchlist_repository import SqlAlchemyWatchlistRepository
 from arcturus_api.infrastructure.providers.directories.adapters import (
@@ -40,6 +43,12 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     app.state.directory_service = InstrumentDirectoryService(
         repository=SqlAlchemyInstrumentRepository(session_factory),
         providers=[NseDirectoryProvider(), NasdaqTraderDirectoryProvider()],
+    )
+    app.state.experiment_repository = SqlAlchemyExperimentRepository(session_factory)
+    app.state.backtest_service = BacktestService(
+        get_market_service(),
+        cache=get_cache(),
+        experiments=app.state.experiment_repository,
     )
 
     yield
