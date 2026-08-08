@@ -66,7 +66,15 @@ export function HeroChart() {
         horzLines: { color: "#1f1f1f" },
       },
       rightPriceScale: { borderColor: "#262626" },
-      timeScale: { borderColor: "#262626", timeVisible: range.key !== "1Y" },
+      timeScale: {
+        borderColor: "#262626",
+        timeVisible: range.key !== "1Y",
+        // Clamp zoom/pan to the data: no drifting into empty whitespace
+        fixLeftEdge: true,
+        fixRightEdge: true,
+        lockVisibleTimeRangeOnResize: true,
+        minBarSpacing: 2,
+      },
       crosshair: { horzLine: { labelBackgroundColor: "#404040" }, vertLine: { labelBackgroundColor: "#404040" } },
       autoSize: true,
     });
