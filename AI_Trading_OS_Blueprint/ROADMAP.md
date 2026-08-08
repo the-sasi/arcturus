@@ -18,6 +18,8 @@ phase builds on without redesign.
 
 - Strategy Engine plugin framework (deterministic, versioned strategies)
 - Indicator library (deterministic calculations, never in LLM prompts)
+- Market Intelligence Tier 1 (see BACKLOG.md): movers, sector heatmap,
+  screeners, index & breadth — deterministic, feeds off existing data
 - Decision Engine: multi-factor evaluation producing explainable recommendations
 - LangGraph Supervisor + first specialist agents (Technical, Risk, Explanation)
 
