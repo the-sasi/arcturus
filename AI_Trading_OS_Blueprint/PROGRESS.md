@@ -123,3 +123,18 @@ Alpha Vantage, NewsAPI; Upstox/Zerodha arrive with Phase 4 broker work.
 - Market headlines: merged index-level news (^NSEI + ^GSPC) with thumbnails
   and the in-app article reader.
 - 57 tests green; all gates clean; redeployed in Docker.
+
+## 2026-08-09 — Dashboard charts
+
+- Hero index chart: TradingView Lightweight Charts (open-source renderer;
+  data flows through OUR candles endpoint + Redis cache, no vendor iframe).
+  Index selector (NIFTY/SENSEX/S&P/NASDAQ) × range toggle (1D/1M/1Y).
+- 30-day SVG sparklines inside every index and quote card (zero-dependency
+  inline polyline; polarity color paired with signed number per a11y rule).
+- India essentials strip: USD/INR, Gold (COMEX), Brent — Yahoo-native
+  tickers through the INDEX passthrough.
+- Market breadth bar: advancing/declining counts added to MoversSnapshot.
+- Polarity palette checked with the dataviz validator: red/green deutan
+  ΔE 6.5 → acceptable only with secondary encoding, which every element
+  has (▲/▼, signed numbers, slope shape).
+- 57 tests green; gates clean; redeployed in Docker.

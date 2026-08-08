@@ -45,6 +45,8 @@ class TestMovers:
         assert snapshot.universe_size == len(MOVERS_UNIVERSE)
         assert str(snapshot.gainers[0].symbol) == "NSE:RELIANCE"
         assert str(snapshot.losers[0].symbol) == "NSE:TCS"
+        assert snapshot.advancing == 2
+        assert snapshot.declining == 1
         # flat (0%) symbols are excluded from both lists
         gainer_tickers = {quote.symbol.ticker for quote in snapshot.gainers}
         loser_tickers = {quote.symbol.ticker for quote in snapshot.losers}

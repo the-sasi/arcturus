@@ -16,6 +16,12 @@
 
 ## Done (2026-08-09)
 
+### Dashboard charts
+- [x] Hero index chart (Lightweight Charts, own data feed, index × range toggles)
+- [x] Sparklines in all index/quote cards (inline SVG)
+- [x] Essentials strip: USD/INR, Gold, Brent
+- [x] Breadth bar (advancing/declining in MoversSnapshot)
+
 ### Dashboard morning briefing
 - [x] INDEX exchange + Yahoo index-ticker passthrough (^NSEI, ^GSPC, …)
 - [x] GET /api/v1/market/movers — curated universe, concurrent, cached 60s

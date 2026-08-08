@@ -50,8 +50,9 @@ Browser (localhost:3000)
   │  TanStack Query polling + Zustand workspace context
   ▼
 Next.js 16 web (Docker: web)                       Live pages:
-  │  REST, JSON                                    Dashboard · Market Intelligence (stock
-  ▼                                                explorer) · Stock Workspace · Watchlists
+  │  REST, JSON                                    Dashboard (indices+charts, movers,
+  │  charts: Lightweight Charts + inline SVG       breadth, headlines) · Market
+  ▼  sparklines — fed by OUR endpoints only        Intelligence · Stock Workspace · Watchlists
 FastAPI api (Docker: api, host port 8600)
   │
   ├─ api/          versioned HTTP layer, domain errors → 4xx/5xx

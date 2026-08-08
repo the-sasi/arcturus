@@ -207,6 +207,8 @@ class MarketDataService(_CachedService):
             losers=[q for q in ranked[-_MOVERS_TOP_N:][::-1] if (q.change_percent or 0) < 0],
             universe_size=len(MOVERS_UNIVERSE),
             quoted=len(quotes),
+            advancing=sum(1 for q in quotes if (q.change_percent or 0) > 0),
+            declining=sum(1 for q in quotes if (q.change_percent or 0) < 0),
         )
 
 

@@ -31,3 +31,5 @@ class MoversSnapshot(BaseModel):
     losers: list[Quote]
     universe_size: int
     quoted: int
+    advancing: int
+    declining: int

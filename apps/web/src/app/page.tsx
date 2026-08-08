@@ -5,7 +5,9 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { ArticleReader } from "@/components/article-reader";
+import { HeroChart } from "@/components/hero-chart";
 import { QuoteCard } from "@/components/quote-card";
+import { Sparkline } from "@/components/sparkline";
 import { api } from "@/lib/api";
 import { useWorkspaceStore } from "@/lib/store";
 import { formatSymbol, type NewsArticle, type Quote } from "@/lib/types";
@@ -28,7 +30,15 @@ const FALLBACK_PULSE = [
   "NASDAQ:MSFT",
 ];
 
-function IndexCard({ symbol, label }: { symbol: string; label: string }) {
+function IndexCard({
+  symbol,
+  label,
+  digits = 0,
+}: {
+  symbol: string;
+  label: string;
+  digits?: number;
+}) {
   const { data, isPending } = useQuery({
     queryKey: ["quote", symbol],
     queryFn: () => api.getQuote(symbol),
@@ -41,17 +51,23 @@ function IndexCard({ symbol, label }: { symbol: string; label: string }) {
       {isPending || !data ? (
         <div className="mt-1.5 h-5 w-20 animate-pulse rounded bg-neutral-800" />
       ) : (
-        <div className="mt-0.5 flex items-baseline gap-2">
-          <span className="text-lg font-semibold tabular-nums">
-            {Number(data.price).toLocaleString(undefined, { maximumFractionDigits: 0 })}
-          </span>
-          {change !== null && (
-            <span
-              className={`text-xs tabular-nums ${change >= 0 ? "text-emerald-400" : "text-red-400"}`}
-            >
-              {change >= 0 ? "▲" : "▼"} {Math.abs(change).toFixed(2)}%
+        <div className="mt-0.5 flex items-end justify-between gap-2">
+          <div>
+            <span className="text-lg font-semibold tabular-nums">
+              {Number(data.price).toLocaleString(undefined, {
+                minimumFractionDigits: digits,
+                maximumFractionDigits: digits,
+              })}
             </span>
-          )}
+            {change !== null && (
+              <span
+                className={`ml-2 text-xs tabular-nums ${change >= 0 ? "text-emerald-400" : "text-red-400"}`}
+              >
+                {change >= 0 ? "▲" : "▼"} {Math.abs(change).toFixed(2)}%
+              </span>
+            )}
+          </div>
+          <Sparkline symbol={symbol} positive={change === null ? null : change >= 0} width={72} height={22} />
         </div>
       )}
     </div>
@@ -133,6 +149,17 @@ export default function DashboardPage() {
         ))}
       </div>
 
+      <div className="mt-4 grid grid-cols-1 gap-6 xl:grid-cols-3">
+        <div className="xl:col-span-2">
+          <HeroChart />
+        </div>
+        <div className="grid content-start gap-3">
+          <IndexCard symbol="INDEX:USDINR=X" label="USD / INR" digits={2} />
+          <IndexCard symbol="INDEX:GC=F" label="Gold (COMEX)" digits={1} />
+          <IndexCard symbol="INDEX:BZ=F" label="Brent Crude" digits={2} />
+        </div>
+      </div>
+
       <div className="mt-6 grid grid-cols-1 gap-6 xl:grid-cols-3">
         <div className="space-y-6 xl:col-span-2">
           <section>
@@ -199,11 +226,31 @@ export default function DashboardPage() {
               </div>
             </div>
           </section>
-          {movers.data && (
-            <p className="text-xs text-neutral-600">
-              Movers tracked across {movers.data.universe_size} major stocks (NIFTY-50 + US
-              majors) — full-market movers arrive with Phase 2.
-            </p>
+          {movers.data && movers.data.quoted > 0 && (
+            <div>
+              <div className="flex items-center justify-between text-xs text-neutral-500">
+                <span>Market breadth (tracked set)</span>
+                <span className="tabular-nums">
+                  <span className="text-emerald-400">{movers.data.advancing} advancing</span>
+                  {" · "}
+                  <span className="text-red-400">{movers.data.declining} declining</span>
+                </span>
+              </div>
+              <div className="mt-1.5 flex h-2 w-full gap-0.5 overflow-hidden rounded">
+                <div
+                  className="bg-emerald-500/80"
+                  style={{ width: `${(movers.data.advancing / movers.data.quoted) * 100}%` }}
+                />
+                <div
+                  className="bg-red-500/80"
+                  style={{ width: `${(movers.data.declining / movers.data.quoted) * 100}%` }}
+                />
+              </div>
+              <p className="mt-2 text-xs text-neutral-600">
+                Movers tracked across {movers.data.universe_size} major stocks (NIFTY-50 + US
+                majors) — full-market movers arrive with Phase 2.
+              </p>
+            </div>
           )}
         </div>
 

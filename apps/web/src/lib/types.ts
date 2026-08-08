@@ -36,6 +36,8 @@ export type MoversSnapshot = {
   losers: Quote[];
   universe_size: number;
   quoted: number;
+  advancing: number;
+  declining: number;
 };
 
 export type Instrument = {

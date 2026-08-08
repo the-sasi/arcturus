@@ -2,6 +2,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/api";
+import { Sparkline } from "./sparkline";
 
 function formatPrice(value: string, currency: string | null): string {
   const number = Number(value);
@@ -32,16 +33,24 @@ export function QuoteCard({ symbol }: { symbol: string }) {
           <div className="mt-1 text-2xl font-semibold tabular-nums">
             {formatPrice(data.price, data.currency)}
           </div>
-          {data.change !== null && data.change_percent !== null && (
-            <div
-              className={`mt-0.5 text-sm tabular-nums ${
-                Number(data.change) >= 0 ? "text-emerald-400" : "text-red-400"
-              }`}
-            >
-              {Number(data.change) >= 0 ? "+" : ""}
-              {Number(data.change).toFixed(2)} ({data.change_percent}%)
-            </div>
-          )}
+          <div className="mt-0.5 flex items-end justify-between gap-2">
+            {data.change !== null && data.change_percent !== null && (
+              <div
+                className={`text-sm tabular-nums ${
+                  Number(data.change) >= 0 ? "text-emerald-400" : "text-red-400"
+                }`}
+              >
+                {Number(data.change) >= 0 ? "+" : ""}
+                {Number(data.change).toFixed(2)} ({data.change_percent}%)
+              </div>
+            )}
+            <Sparkline
+              symbol={symbol}
+              positive={data.change === null ? null : Number(data.change) >= 0}
+              width={90}
+              height={24}
+            />
+          </div>
         </>
       )}
     </div>
