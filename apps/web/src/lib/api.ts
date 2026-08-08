@@ -6,6 +6,7 @@ import type {
   Fundamentals,
   IndicatorSeries,
   InstrumentPage,
+  MarketRegime,
   MoversSnapshot,
   NewsArticle,
   Quote,
@@ -56,6 +57,9 @@ export const api = {
     ),
 
   getMovers: () => request<MoversSnapshot>("/api/v1/market/movers"),
+
+  getRegime: (exchange: string) =>
+    request<MarketRegime>(`/api/v1/market/regime?exchange=${encodeURIComponent(exchange)}`),
 
   evaluateStrategies: (symbol: string) =>
     request<StrategyVerdict[]>(`/api/v1/strategies/evaluate/${encodeURIComponent(symbol)}`),

@@ -8,9 +8,11 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from arcturus_api.api.deps import (
     get_indicator_service,
     get_market_service,
+    get_regime_service,
     get_research_service,
 )
 from arcturus_api.application.market.indicator_service import IndicatorService
+from arcturus_api.application.market.regime_service import RegimeService
 from arcturus_api.application.market.service import MarketDataService, ResearchDataService
 from arcturus_api.domain.indicators.models import IndicatorSeries, UnknownIndicatorError
 from arcturus_api.domain.market.directory import MoversSnapshot
@@ -25,13 +27,24 @@ from arcturus_api.domain.market.fundamentals import (
     Fundamentals,
     NewsArticle,
 )
-from arcturus_api.domain.market.models import CandleSeries, Interval, Quote
+from arcturus_api.domain.market.models import CandleSeries, Exchange, Interval, Quote
+from arcturus_api.domain.market.regime import MarketRegime
 
 router = APIRouter(prefix="/market", tags=["market"])
 
 MarketService = Annotated[MarketDataService, Depends(get_market_service)]
 ResearchService = Annotated[ResearchDataService, Depends(get_research_service)]
 Indicators = Annotated[IndicatorService, Depends(get_indicator_service)]
+Regime = Annotated[RegimeService, Depends(get_regime_service)]
+
+
+@router.get("/regime")
+async def get_regime(service: Regime, exchange: Exchange = Exchange.NSE) -> MarketRegime:
+    """Overall market health for an exchange's benchmark index."""
+    try:
+        return await service.get_regime(exchange)
+    except ProviderUnavailableError as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
 
 
 @router.get("/movers")

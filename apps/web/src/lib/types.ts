@@ -60,6 +60,16 @@ export type StrategyVerdict = {
   as_of: string;
 };
 
+export type MarketRegime = {
+  index_symbol: SymbolRef;
+  state: "risk_on" | "mixed" | "risk_off";
+  index_close: number;
+  sma_50: number | null;
+  sma_200: number | null;
+  description: string;
+  as_of: string;
+};
+
 export type BacktestTrade = {
   entry_date: string;
   entry_price: number;

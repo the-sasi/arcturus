@@ -190,3 +190,15 @@ Alpha Vantage, NewsAPI; Upstox/Zerodha arrive with Phase 4 broker work.
   decline); RELIANCE range_breakout −3.8% vs +15.7% (this strategy earns no
   keep on this stock). Exactly the falsifiability the platform promised.
 - 87 tests green; all gates clean.
+
+## 2026-08-09 — Regime filter (don't run sunny-day recipes in a storm)
+
+- MarketRegime: benchmark index vs 200-DMA + 50-DMA slope → risk-on /
+  mixed / risk-off. NSE stocks judge against ^NSEI, US against ^GSPC.
+- Bullish strategy verdicts auto-adjusted with an explicit appended reason;
+  bearish/neutral verdicts untouched. Fail-open if the index is unreachable.
+- Live check was instructive: NSE currently risk-off (NIFTY below its
+  200-DMA) while the US is risk-on — TCS's bullish trend verdict trimmed
+  75 → 60 with the reason stated.
+- Regime badge (☀️/⛅/⛈️ + text) in the Workspace Strategy panel.
+- 96 tests green; all gates clean.

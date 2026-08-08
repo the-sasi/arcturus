@@ -10,6 +10,32 @@ const STANCE_STYLE = {
   bearish: { label: "▼ Bearish", classes: "bg-red-500/15 text-red-400" },
 } as const;
 
+const REGIME_STYLE = {
+  risk_on: { label: "Market: Risk-on ☀️", classes: "bg-emerald-500/15 text-emerald-400" },
+  mixed: { label: "Market: Mixed ⛅", classes: "bg-amber-500/15 text-amber-400" },
+  risk_off: { label: "Market: Risk-off ⛈️", classes: "bg-red-500/15 text-red-400" },
+} as const;
+
+function RegimeBadge({ symbol }: { symbol: string }) {
+  const exchange = symbol.includes(":") ? symbol.split(":")[0] : "NSE";
+  const { data } = useQuery({
+    queryKey: ["regime", exchange],
+    queryFn: () => api.getRegime(exchange),
+    staleTime: 30 * 60_000,
+    retry: 1,
+  });
+  if (!data) return null;
+  const style = REGIME_STYLE[data.state];
+  return (
+    <span
+      title={data.description}
+      className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${style.classes}`}
+    >
+      {style.label}
+    </span>
+  );
+}
+
 function VerdictCard({ verdict }: { verdict: StrategyVerdict }) {
   const stance = STANCE_STYLE[verdict.stance];
   return (
@@ -87,10 +113,13 @@ export function StrategyPanel({ symbol }: { symbol: string }) {
 
   return (
     <section className="rounded-lg border border-neutral-800 p-5">
-      <div className="flex items-baseline justify-between gap-3">
-        <h2 className="text-sm font-medium uppercase tracking-wide text-neutral-500">
-          Strategy Analysis
-        </h2>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex items-center gap-3">
+          <h2 className="text-sm font-medium uppercase tracking-wide text-neutral-500">
+            Strategy Analysis
+          </h2>
+          <RegimeBadge symbol={symbol} />
+        </div>
         <span className="text-xs text-neutral-600">
           Rule-based signals with reasons — decision support, not financial advice.
         </span>

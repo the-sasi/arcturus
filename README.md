@@ -79,6 +79,8 @@ FastAPI api (Docker: api, host port 8600)
   │     StrategyService        versioned strategy plugins -> explainable verdicts
   │                            (ema_crossover · rsi_mean_reversion · range_breakout)
   │     BacktestService        prefix-replay backtests, realistic costs, 1h cache
+  │     RegimeService          benchmark-index health; gates bullish strategy
+  │                            confidence (risk-off trims trend/breakout signals)
   ├─ domain/       pure models + ports (zero framework/vendor imports)
   │     ports: MarketDataProvider · FundamentalDataProvider · NewsProvider
   │            · ArticleReader · InstrumentDirectoryProvider · InstrumentRepository
@@ -124,6 +126,8 @@ GET  /health/ready                        readiness (probes TimescaleDB)
 GET  /api/v1/market/quote/{symbol}        symbols are EXCHANGE:TICKER, e.g. NSE:RELIANCE;
                                           indices use INDEX:^NSEI, INDEX:^GSPC, …
 GET  /api/v1/market/movers                top gainers/losers (curated NIFTY-50 + US majors)
+GET  /api/v1/market/regime?exchange=NSE   market health: risk-on / mixed / risk-off
+                                          (index vs 200-DMA + 50-DMA slope)
 GET  /api/v1/market/indicators/{symbol}?interval=1d&specs=ema:20,rsi:14
                                           deterministic indicators (sma/ema/rsi/macd/bollinger/atr)
 GET  /api/v1/strategies                   registered strategy plugins + metadata

@@ -3,10 +3,18 @@
 ## Phase 2 — Decision Engine
 
 ### M2.2b remaining (next)
-- [ ] Regime filter (index vs 200-DMA, breadth) gating strategy confidence
 - [ ] Volatility-based position sizing suggestions
 - [ ] Strategy signal markers on the Workspace chart
 - [ ] Tier 2 strategies: cross-sectional momentum, multi-factor ranking, pairs
+
+### Done (2026-08-09) — Regime filter
+- [x] MarketRegime domain: risk-on / mixed / risk-off from benchmark index
+      (close vs 200-DMA + 50-DMA slope); per-exchange index mapping
+- [x] GET /api/v1/market/regime?exchange= (30m cache)
+- [x] Bullish verdicts gated by regime with appended plain-language reason
+      (risk-off: trend/breakout −15, mean-reversion −10; risk-on: +5)
+- [x] Regime badge in Workspace Strategy panel
+- [x] 9 regime tests (compute + gating + frozen-copy safety)
 
 ### Done (2026-08-09) — M2.2b Backtester
 - [x] ADR-007: custom prefix-replay engine (one source of truth; no-lookahead
