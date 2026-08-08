@@ -26,7 +26,19 @@ Prerequisite: Docker Desktop running.
 ```bash
 cd infra
 cp .env.example .env   # first time only
-docker compose up -d --build
+docker compose up -d   # DEV mode (default): source bind-mounted, hot reload,
+                       # no rebuilds — docker-compose.override.yml does this
+```
+
+Code changes apply instantly: uvicorn reloads the API (WatchFiles polling),
+Next.js dev server reloads the UI. Rebuild only when dependencies change
+(`docker compose up -d --build`, or delete the `web-node-modules` volume after
+frontend dependency changes).
+
+Production-style run (no mounts, optimized builds — ignores the override):
+
+```bash
+docker compose -f docker-compose.yml up -d --build
 ```
 
 | Service | URL |
