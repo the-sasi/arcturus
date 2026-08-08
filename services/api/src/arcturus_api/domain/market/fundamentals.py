@@ -58,3 +58,17 @@ class NewsArticle(BaseModel):
     url: str | None = None
     published_at: datetime | None = None
     summary: str | None = None
+    image_url: str | None = None
+
+
+class ArticleContent(BaseModel):
+    """Reader-mode extraction of a news article page."""
+
+    model_config = ConfigDict(frozen=True)
+
+    url: str
+    title: str | None = None
+    text: str | None = None
+    site_name: str | None = None
+    image_url: str | None = None
+    published_at: datetime | None = None

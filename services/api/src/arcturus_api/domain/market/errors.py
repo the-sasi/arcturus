@@ -17,6 +17,13 @@ class ProviderUnavailableError(MarketDataError):
         super().__init__(f"Provider '{provider}' unavailable. {detail}".strip())
 
 
+class ArticleFetchError(MarketDataError):
+    def __init__(self, url: str, reason: str) -> None:
+        self.url = url
+        self.reason = reason
+        super().__init__(f"Cannot read article ({reason}): {url}")
+
+
 class UnknownProviderError(MarketDataError):
     def __init__(self, provider: str, available: list[str]) -> None:
         self.provider = provider

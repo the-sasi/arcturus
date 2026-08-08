@@ -69,6 +69,16 @@ export type NewsArticle = {
   url: string | null;
   published_at: string | null;
   summary: string | null;
+  image_url: string | null;
+};
+
+export type ArticleContent = {
+  url: string;
+  title: string | null;
+  text: string | null;
+  site_name: string | null;
+  image_url: string | null;
+  published_at: string | null;
 };
 
 export type WatchlistItem = {

@@ -107,3 +107,26 @@ class TestParseNewsItem:
 
     def test_untitled_item_dropped(self) -> None:
         assert parse_news_item({"content": {"summary": "no title"}}) is None
+
+    def test_thumbnail_prefers_smallest_at_least_200px(self) -> None:
+        article = parse_news_item(
+            {
+                "content": {
+                    "title": "With image",
+                    "thumbnail": {
+                        "resolutions": [
+                            {"url": "https://img.example.com/full.jpg", "width": 1200},
+                            {"url": "https://img.example.com/mid.jpg", "width": 640},
+                            {"url": "https://img.example.com/small.jpg", "width": 140},
+                        ]
+                    },
+                }
+            }
+        )
+        assert article is not None
+        assert article.image_url == "https://img.example.com/mid.jpg"
+
+    def test_missing_thumbnail_is_none(self) -> None:
+        article = parse_news_item({"content": {"title": "No image"}})
+        assert article is not None
+        assert article.image_url is None

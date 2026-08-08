@@ -8,7 +8,12 @@ domain and application layers do not change.
 from abc import ABC, abstractmethod
 from datetime import datetime
 
-from arcturus_api.domain.market.fundamentals import CompanyProfile, Fundamentals, NewsArticle
+from arcturus_api.domain.market.fundamentals import (
+    ArticleContent,
+    CompanyProfile,
+    Fundamentals,
+    NewsArticle,
+)
 from arcturus_api.domain.market.models import CandleSeries, Interval, Quote, Symbol
 
 
@@ -54,3 +59,13 @@ class NewsProvider(ABC):
     @abstractmethod
     async def get_news(self, symbol: Symbol, limit: int = 10) -> list[NewsArticle]:
         """Return recent news for the instrument, newest first."""
+
+
+class ArticleReader(ABC):
+    """Port for reader-mode extraction of an article page by URL."""
+
+    name: str
+
+    @abstractmethod
+    async def read(self, url: str) -> ArticleContent:
+        """Fetch and extract the article. Raises ArticleFetchError on failure."""

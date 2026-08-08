@@ -1,4 +1,5 @@
 import type {
+  ArticleContent,
   CandleSeries,
   CompanyProfile,
   Fundamentals,
@@ -57,6 +58,8 @@ export const api = {
     request<NewsArticle[]>(
       `/api/v1/market/news/${encodeURIComponent(symbol)}?limit=${limit}`,
     ),
+  readArticle: (url: string) =>
+    request<ArticleContent>(`/api/v1/market/news/article?url=${encodeURIComponent(url)}`),
 
   listWatchlists: () => request<Watchlist[]>("/api/v1/watchlists"),
   createWatchlist: (name: string) =>

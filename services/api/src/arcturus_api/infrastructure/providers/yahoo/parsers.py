@@ -132,4 +132,28 @@ def parse_news_item(raw: dict[str, Any]) -> NewsArticle | None:
         url=url,
         published_at=published_at,
         summary=_str_or_none(content.get("summary")),
+        image_url=_extract_thumbnail(content),
     )
+
+
+def _extract_thumbnail(content: dict[str, Any]) -> str | None:
+    thumbnail = content.get("thumbnail")
+    if not isinstance(thumbnail, dict):
+        return None
+    resolutions = thumbnail.get("resolutions")
+    if not isinstance(resolutions, list) or not resolutions:
+        return _str_or_none(thumbnail.get("originalUrl"))
+    # Prefer the smallest rendition ≥200px wide to keep list views light.
+    candidates = [
+        item for item in resolutions if isinstance(item, dict) and isinstance(item.get("url"), str)
+    ]
+    if not candidates:
+        return None
+    sized = sorted(
+        (item for item in candidates if isinstance(item.get("width"), int)),
+        key=lambda item: item["width"],
+    )
+    for item in sized:
+        if item["width"] >= 200:
+            return str(item["url"])
+    return str((sized[-1] if sized else candidates[0])["url"])

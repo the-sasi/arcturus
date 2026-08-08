@@ -76,4 +76,22 @@ Phase 1 Foundation is functionally complete. Repo pushed to GitHub over SSH
 
 Remaining data integrations (blocked on user-provided API keys): Finnhub,
 Alpha Vantage, NewsAPI; Upstox/Zerodha arrive with Phase 4 broker work.
-Next: Redis quote caching, then Phase 2 — Strategy Engine.
+
+## 2026-08-09 — Speed + in-app news reader + full Docker deployment
+
+- Redis read-through caching in application services (fail-open): quotes 30s,
+  candles 5m, profile/fundamentals 1h, news 5m, extracted articles 24h.
+  User requirement: "system should be fast" — latency is now a first-class
+  concern.
+- In-app news reading: `ArticleReader` port + trafilatura adapter (httpx,
+  8s timeout, 3MB cap, SSRF guard rejecting non-public hosts). Endpoint
+  `GET /api/v1/market/news/article?url=`. Workspace news items open a
+  reader modal with hero image, extracted text, fallback to Yahoo summary.
+- News thumbnails: Yahoo thumbnail renditions parsed (smallest ≥200px).
+- Fixed dividend-yield double-percent bug (Yahoo reports percent already).
+- Full Docker deployment: `services/api/Dockerfile` (uv, auto-migrations on
+  start), `apps/web/Dockerfile` (standalone Next build), both added to
+  infra/docker-compose.yml (api on 8600, web on 3000).
+- README now carries the complete architecture + external-calls table;
+  standing rule: update it in the same commit as any code change.
+- 46 tests green; all quality gates clean.

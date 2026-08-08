@@ -14,6 +14,18 @@
 - [ ] NewsAPI adapter (broad news coverage) — needs NEWSAPI_KEY
 - [ ] Alpha Vantage adapter (fundamentals cross-check) — needs ALPHAVANTAGE_KEY
 
+## Done (2026-08-09)
+
+### Speed + in-app reader + Docker deployment
+- [x] Redis read-through cache (fail-open) across market/research services
+- [x] ArticleReader port + trafilatura adapter, SSRF-guarded, 24h article cache
+- [x] `GET /api/v1/market/news/article?url=` + in-app reader modal with images
+- [x] News thumbnails from Yahoo renditions
+- [x] Dividend-yield double-percent fix
+- [x] Dockerfiles for api (uv + auto-migrate) and web (standalone Next)
+- [x] api + web services in docker-compose (full stack in Docker)
+- [x] README: complete architecture + external-calls table (standing rule)
+
 ## Done (2026-08-08)
 
 ### Data expansion (Yahoo full extraction) + Stock Workspace

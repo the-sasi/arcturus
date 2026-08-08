@@ -1,6 +1,35 @@
 name: arcturus
 
 services:
+  api:
+    build: ../services/api
+    ports:
+      - "8600:8000"
+    environment:
+      ARCTURUS_ENVIRONMENT: ${ARCTURUS_ENVIRONMENT:-development}
+      ARCTURUS_POSTGRES_DSN: postgresql+asyncpg://${POSTGRES_USER:-arcturus}:${POSTGRES_PASSWORD:-arcturus}@timescaledb:5432/${POSTGRES_DB:-arcturus}
+      ARCTURUS_REDIS_URL: redis://redis:6379/0
+      ARCTURUS_QDRANT_URL: http://qdrant:6333
+      ARCTURUS_NEO4J_URL: bolt://neo4j:7687
+      ARCTURUS_CORS_ORIGINS: '["http://localhost:3000"]'
+    depends_on:
+      timescaledb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  web:
+    build:
+      context: ../apps/web
+      args:
+        # Baked into the browser bundle; the browser reaches the API via the
+        # host-mapped port, not the compose network
+        NEXT_PUBLIC_API_URL: http://localhost:8600
+    ports:
+      - "3000:3000"
+    depends_on:
+      - api
+
   timescaledb:
     image: timescale/timescaledb:latest-pg16
     environment:

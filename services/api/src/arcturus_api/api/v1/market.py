@@ -8,10 +8,16 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from arcturus_api.api.deps import get_market_service, get_research_service
 from arcturus_api.application.market.service import MarketDataService, ResearchDataService
 from arcturus_api.domain.market.errors import (
+    ArticleFetchError,
     ProviderUnavailableError,
     SymbolNotFoundError,
 )
-from arcturus_api.domain.market.fundamentals import CompanyProfile, Fundamentals, NewsArticle
+from arcturus_api.domain.market.fundamentals import (
+    ArticleContent,
+    CompanyProfile,
+    Fundamentals,
+    NewsArticle,
+)
 from arcturus_api.domain.market.models import CandleSeries, Interval, Quote
 
 router = APIRouter(prefix="/market", tags=["market"])
@@ -51,6 +57,20 @@ async def get_fundamentals(symbol: str, service: ResearchService) -> Fundamental
         raise HTTPException(status_code=404, detail=str(exc)) from exc
     except ProviderUnavailableError as exc:
         raise HTTPException(status_code=502, detail=str(exc)) from exc
+
+
+@router.get("/news/article")
+async def read_news_article(
+    url: Annotated[str, Query(min_length=10, max_length=2000)],
+    service: ResearchService,
+) -> ArticleContent:
+    """Reader-mode extraction of an article page, for in-app display."""
+    try:
+        return await service.read_article(url)
+    except ArticleFetchError as exc:
+        blocked = ("unsupported scheme", "missing host", "blocked host", "non-public address")
+        status = 400 if exc.reason in blocked else 502
+        raise HTTPException(status_code=status, detail=str(exc)) from exc
 
 
 @router.get("/news/{symbol}")

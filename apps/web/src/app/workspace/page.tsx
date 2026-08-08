@@ -2,10 +2,14 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
+import { ArticleReader } from "@/components/article-reader";
 import { QuoteCard } from "@/components/quote-card";
 import { api, ApiError } from "@/lib/api";
 import { useWorkspaceStore } from "@/lib/store";
-import type { Fundamentals } from "@/lib/types";
+import type { Fundamentals, NewsArticle } from "@/lib/types";
+
+/* eslint-disable @next/next/no-img-element -- publisher thumbnails come from
+   arbitrary hosts; next/image would need per-domain config */
 
 function humanize(value: number | null): string {
   if (value === null) return "—";
@@ -41,7 +45,11 @@ function FundamentalsGrid({ data }: { data: Fundamentals }) {
       <Metric label="P/E (forward)" value={num(data.forward_pe)} />
       <Metric label="Price / Book" value={num(data.price_to_book)} />
       <Metric label="EPS (trailing)" value={num(data.eps_trailing)} />
-      <Metric label="Dividend Yield" value={pct(data.dividend_yield)} />
+      {/* Yahoo already reports dividendYield in percent units */}
+      <Metric
+        label="Dividend Yield"
+        value={data.dividend_yield === null ? "—" : `${num(data.dividend_yield)}%`}
+      />
       <Metric label="Beta" value={num(data.beta)} />
       <Metric label="52w High" value={num(data.fifty_two_week_high)} />
       <Metric label="52w Low" value={num(data.fifty_two_week_low)} />
@@ -91,6 +99,7 @@ export default function WorkspacePage() {
   const selectedSymbol = useWorkspaceStore((state) => state.selectedSymbol);
   const setSelectedSymbol = useWorkspaceStore((state) => state.setSelectedSymbol);
   const [input, setInput] = useState(selectedSymbol);
+  const [openArticle, setOpenArticle] = useState<NewsArticle | null>(null);
 
   const profile = useQuery({
     queryKey: ["profile", selectedSymbol],
@@ -188,25 +197,29 @@ export default function WorkspacePage() {
             ) : (
               <ul className="space-y-3">
                 {news.data?.map((article, index) => (
-                  <li key={index} className="text-sm">
-                    {article.url ? (
-                      <a
-                        href={article.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-neutral-200 hover:underline"
-                      >
-                        {article.title}
-                      </a>
-                    ) : (
-                      <span className="text-neutral-200">{article.title}</span>
-                    )}
-                    <div className="mt-0.5 text-xs text-neutral-500">
-                      {article.publisher ?? "Unknown"}
-                      {article.published_at
-                        ? ` · ${new Date(article.published_at).toLocaleDateString()}`
-                        : ""}
-                    </div>
+                  <li key={index}>
+                    <button
+                      onClick={() => setOpenArticle(article)}
+                      className="flex w-full gap-3 rounded-md p-1.5 text-left hover:bg-neutral-900"
+                    >
+                      {article.image_url && (
+                        <img
+                          src={article.image_url}
+                          alt=""
+                          className="h-14 w-20 shrink-0 rounded object-cover"
+                          loading="lazy"
+                        />
+                      )}
+                      <span className="min-w-0">
+                        <span className="block text-sm text-neutral-200">{article.title}</span>
+                        <span className="mt-0.5 block text-xs text-neutral-500">
+                          {article.publisher ?? "Unknown"}
+                          {article.published_at
+                            ? ` · ${new Date(article.published_at).toLocaleDateString()}`
+                            : ""}
+                        </span>
+                      </span>
+                    </button>
                   </li>
                 ))}
               </ul>
@@ -214,6 +227,10 @@ export default function WorkspacePage() {
           </Panel>
         </div>
       </div>
+
+      {openArticle && (
+        <ArticleReader article={openArticle} onClose={() => setOpenArticle(null)} />
+      )}
     </div>
   );
 }
