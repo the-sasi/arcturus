@@ -30,6 +30,8 @@ class Exchange(StrEnum):
     NASDAQ = "NASDAQ"
     NYSE = "NYSE"
     AMEX = "AMEX"
+    # Market indices (NIFTY, SENSEX, S&P 500, …) — vendor tickers pass through
+    INDEX = "INDEX"
     OTHER = "OTHER"
 
 

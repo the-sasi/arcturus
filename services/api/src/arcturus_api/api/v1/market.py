@@ -7,6 +7,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 
 from arcturus_api.api.deps import get_market_service, get_research_service
 from arcturus_api.application.market.service import MarketDataService, ResearchDataService
+from arcturus_api.domain.market.directory import MoversSnapshot
 from arcturus_api.domain.market.errors import (
     ArticleFetchError,
     ProviderUnavailableError,
@@ -24,6 +25,15 @@ router = APIRouter(prefix="/market", tags=["market"])
 
 MarketService = Annotated[MarketDataService, Depends(get_market_service)]
 ResearchService = Annotated[ResearchDataService, Depends(get_research_service)]
+
+
+@router.get("/movers")
+async def get_movers(service: MarketService) -> MoversSnapshot:
+    """Top gainers/losers across the curated universe (NIFTY-50 + US majors)."""
+    try:
+        return await service.get_movers()
+    except ProviderUnavailableError as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
 
 
 @router.get("/quote/{symbol}")

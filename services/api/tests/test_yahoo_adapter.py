@@ -12,3 +12,7 @@ class TestYahooTickerMapping:
     def test_us_exchanges_are_bare(self) -> None:
         assert to_yahoo_ticker(Symbol.parse("NASDAQ:AAPL")) == "AAPL"
         assert to_yahoo_ticker(Symbol.parse("NYSE:GE")) == "GE"
+
+    def test_index_tickers_pass_through(self) -> None:
+        assert to_yahoo_ticker(Symbol.parse("INDEX:^NSEI")) == "^NSEI"
+        assert to_yahoo_ticker(Symbol.parse("INDEX:^GSPC")) == "^GSPC"

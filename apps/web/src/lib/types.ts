@@ -31,6 +31,13 @@ export type CandleSeries = {
   candles: Candle[];
 };
 
+export type MoversSnapshot = {
+  gainers: Quote[];
+  losers: Quote[];
+  universe_size: number;
+  quoted: number;
+};
+
 export type Instrument = {
   symbol: SymbolRef;
   name: string;

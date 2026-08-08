@@ -56,6 +56,9 @@ _YF_INTERVAL: dict[Interval, str] = {
 
 def to_yahoo_ticker(symbol: Symbol) -> str:
     """Map canonical ``EXCHANGE:TICKER`` to Yahoo's vendor format."""
+    if symbol.exchange == Exchange.INDEX:
+        # Index tickers are Yahoo-native (^NSEI, ^GSPC, …)
+        return symbol.ticker
     return f"{symbol.ticker}{_SUFFIX_BY_EXCHANGE.get(symbol.exchange, '')}"
 
 

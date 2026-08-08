@@ -110,3 +110,16 @@ Alpha Vantage, NewsAPI; Upstox/Zerodha arrive with Phase 4 broker work.
 - Workspace symbol input replaced with name-based autocomplete + popular
   stock chips (Reliance, TCS, Apple, Nvidia, …) for newcomers.
 - 54 tests green; all gates clean; full stack redeployed in Docker.
+
+## 2026-08-09 — Dashboard rebuilt as a morning briefing
+
+- Index strip: NIFTY 50, SENSEX, S&P 500, NASDAQ live cards
+  (new INDEX exchange; Yahoo-native ^ tickers pass through the adapter).
+- Watchlist-aware pulse: shows the user's first non-empty watchlist
+  (fallback: curated Market Pulse), each card click-through to Workspace.
+- Top gainers/losers: GET /api/v1/market/movers over a curated NIFTY-50 +
+  US-majors universe (concurrent quotes, semaphore 8, fail-soft per symbol,
+  60s Redis TTL — measured 6s cold / 43ms cached, 49/50 quoted).
+- Market headlines: merged index-level news (^NSEI + ^GSPC) with thumbnails
+  and the in-app article reader.
+- 57 tests green; all gates clean; redeployed in Docker.

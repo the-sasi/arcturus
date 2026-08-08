@@ -56,7 +56,8 @@ FastAPI api (Docker: api, host port 8600)
   │
   ├─ api/          versioned HTTP layer, domain errors → 4xx/5xx
   ├─ application/  use-case services + Redis read-through caching
-  │     MarketDataService      quotes (TTL 30s) · candles (TTL 5m)
+  │     MarketDataService      quotes incl. indices (TTL 30s) · candles (TTL 5m)
+  │                            · movers over curated universe (TTL 60s)
   │     ResearchDataService    profile/fundamentals (TTL 1h) · news (TTL 5m)
   │                            · article reader (TTL 24h)
   │     WatchlistService       watchlist CRUD (no cache — source of truth is ours)
@@ -103,7 +104,9 @@ external data is delayed/unofficial (Yahoo) — not for latency-sensitive tradin
 ```
 GET  /health                              liveness
 GET  /health/ready                        readiness (probes TimescaleDB)
-GET  /api/v1/market/quote/{symbol}        symbols are EXCHANGE:TICKER, e.g. NSE:RELIANCE
+GET  /api/v1/market/quote/{symbol}        symbols are EXCHANGE:TICKER, e.g. NSE:RELIANCE;
+                                          indices use INDEX:^NSEI, INDEX:^GSPC, …
+GET  /api/v1/market/movers                top gainers/losers (curated NIFTY-50 + US majors)
 GET  /api/v1/market/candles/{symbol}?interval=1d
 GET  /api/v1/market/profile/{symbol}
 GET  /api/v1/market/fundamentals/{symbol}

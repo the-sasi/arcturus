@@ -16,6 +16,12 @@
 
 ## Done (2026-08-09)
 
+### Dashboard morning briefing
+- [x] INDEX exchange + Yahoo index-ticker passthrough (^NSEI, ^GSPC, …)
+- [x] GET /api/v1/market/movers — curated universe, concurrent, cached 60s
+- [x] Dashboard: index strip, watchlist-aware pulse, gainers/losers,
+      market headlines with in-app reader
+
 ### Stock directory + Market Intelligence explorer
 - [x] Instruments table (migration 0002) + repository port/adapter
 - [x] Exchange directory adapters: NSE CSV + Nasdaq Trader (11,178 instruments seeded)

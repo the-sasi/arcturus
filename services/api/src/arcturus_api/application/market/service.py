@@ -4,6 +4,8 @@ Depends only on ports — never on concrete adapters. Read paths cache vendor
 responses (fail-open) so repeated requests don't pay vendor latency.
 """
 
+import asyncio
+import logging
 from collections.abc import Awaitable, Callable
 from datetime import UTC, datetime, timedelta
 from typing import TypeVar
@@ -11,6 +13,7 @@ from typing import TypeVar
 from pydantic import BaseModel, TypeAdapter
 
 from arcturus_api.application.cache import CachePort, NullCache
+from arcturus_api.domain.market.directory import MoversSnapshot
 from arcturus_api.domain.market.fundamentals import (
     ArticleContent,
     CompanyProfile,
@@ -25,6 +28,8 @@ from arcturus_api.domain.market.ports import (
     NewsProvider,
 )
 
+logger = logging.getLogger(__name__)
+
 ModelT = TypeVar("ModelT", bound=BaseModel)
 
 QUOTE_TTL = 30
@@ -33,6 +38,65 @@ PROFILE_TTL = 3600
 FUNDAMENTALS_TTL = 3600
 NEWS_TTL = 300
 ARTICLE_TTL = 86400
+MOVERS_TTL = 60
+
+_MOVERS_CONCURRENCY = 8
+_MOVERS_TOP_N = 6
+
+# Curated movers universe until Phase 2's market-wide data pipeline:
+# NIFTY-50 constituents + widely-followed US names.
+MOVERS_UNIVERSE: tuple[str, ...] = (
+    "NSE:RELIANCE",
+    "NSE:TCS",
+    "NSE:HDFCBANK",
+    "NSE:ICICIBANK",
+    "NSE:INFY",
+    "NSE:SBIN",
+    "NSE:BHARTIARTL",
+    "NSE:ITC",
+    "NSE:LT",
+    "NSE:KOTAKBANK",
+    "NSE:AXISBANK",
+    "NSE:HINDUNILVR",
+    "NSE:BAJFINANCE",
+    "NSE:ASIANPAINT",
+    "NSE:MARUTI",
+    "NSE:TITAN",
+    "NSE:SUNPHARMA",
+    "NSE:TATAMOTORS",
+    "NSE:TATASTEEL",
+    "NSE:NTPC",
+    "NSE:POWERGRID",
+    "NSE:ULTRACEMCO",
+    "NSE:WIPRO",
+    "NSE:HCLTECH",
+    "NSE:TECHM",
+    "NSE:ADANIENT",
+    "NSE:ADANIPORTS",
+    "NSE:JSWSTEEL",
+    "NSE:COALINDIA",
+    "NSE:ONGC",
+    "NSE:GRASIM",
+    "NSE:CIPLA",
+    "NSE:DRREDDY",
+    "NSE:APOLLOHOSP",
+    "NSE:BAJAJFINSV",
+    "NSE:EICHERMOT",
+    "NSE:HEROMOTOCO",
+    "NSE:HINDALCO",
+    "NSE:INDUSINDBK",
+    "NSE:NESTLEIND",
+    "NASDAQ:AAPL",
+    "NASDAQ:MSFT",
+    "NASDAQ:NVDA",
+    "NASDAQ:TSLA",
+    "NASDAQ:AMZN",
+    "NASDAQ:GOOGL",
+    "NASDAQ:META",
+    "NYSE:JPM",
+    "NYSE:V",
+    "NYSE:GE",
+)
 
 _DEFAULT_LOOKBACK: dict[Interval, timedelta] = {
     Interval.MIN_1: timedelta(days=1),
@@ -115,6 +179,35 @@ class MarketDataService(_CachedService):
                 f"candles:{symbol}:{interval}", CANDLES_TTL, CandleSeries, load
             )
         return await load()
+
+    async def get_movers(self) -> MoversSnapshot:
+        return await self._cached(
+            "movers:default", MOVERS_TTL, MoversSnapshot, self._compute_movers
+        )
+
+    async def _compute_movers(self) -> MoversSnapshot:
+        """Quote the curated universe concurrently; individual failures are skipped."""
+        semaphore = asyncio.Semaphore(_MOVERS_CONCURRENCY)
+
+        async def quote_one(raw_symbol: str) -> Quote | None:
+            async with semaphore:
+                try:
+                    return await self.get_quote(raw_symbol)
+                except Exception:
+                    logger.debug("movers: quote failed for %s", raw_symbol, exc_info=True)
+                    return None
+
+        results = await asyncio.gather(*(quote_one(symbol) for symbol in MOVERS_UNIVERSE))
+        quotes = [
+            quote for quote in results if quote is not None and quote.change_percent is not None
+        ]
+        ranked = sorted(quotes, key=lambda quote: quote.change_percent or 0, reverse=True)
+        return MoversSnapshot(
+            gainers=[q for q in ranked[:_MOVERS_TOP_N] if (q.change_percent or 0) > 0],
+            losers=[q for q in ranked[-_MOVERS_TOP_N:][::-1] if (q.change_percent or 0) < 0],
+            universe_size=len(MOVERS_UNIVERSE),
+            quoted=len(quotes),
+        )
 
 
 class ResearchDataService(_CachedService):

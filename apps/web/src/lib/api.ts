@@ -4,6 +4,7 @@ import type {
   CompanyProfile,
   Fundamentals,
   InstrumentPage,
+  MoversSnapshot,
   NewsArticle,
   Quote,
   Watchlist,
@@ -50,6 +51,8 @@ export const api = {
     request<CandleSeries>(
       `/api/v1/market/candles/${encodeURIComponent(symbol)}?interval=${interval}`,
     ),
+
+  getMovers: () => request<MoversSnapshot>("/api/v1/market/movers"),
 
   searchInstruments: (params: {
     query?: string;
