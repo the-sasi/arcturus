@@ -40,6 +40,7 @@ const toTime = (iso: string) => (Date.parse(iso) / 1000) as never;
 export function PriceChart({ symbol }: { symbol: string }) {
   const [range, setRange] = useState<(typeof RANGES)[number]>(RANGES[2]);
   const containerRef = useRef<HTMLDivElement>(null);
+  const lastRangeSwitch = useRef(0);
 
   const candlesQuery = useQuery({
     queryKey: ["candles", symbol, range.interval],
@@ -162,7 +163,30 @@ export function PriceChart({ symbol }: { symbol: string }) {
     }
 
     chart.timeScale().fitContent();
-    return () => chart.remove();
+
+    // TradingView-style zoom escalation: wheel-out at full view widens the
+    // time range (1D→6M→1Y→3Y); wheel-in on a tight view goes finer.
+    const onWheel = (event: WheelEvent) => {
+      const logical = chart.timeScale().getVisibleLogicalRange();
+      if (!logical) return;
+      const now = Date.now();
+      if (now - lastRangeSwitch.current < 600) return;
+      const visibleBars = logical.to - logical.from;
+      const index = RANGES.findIndex((option) => option.key === range.key);
+      if (event.deltaY > 0 && visibleBars >= candles.length - 2 && index < RANGES.length - 1) {
+        lastRangeSwitch.current = now;
+        setRange(RANGES[index + 1]);
+      } else if (event.deltaY < 0 && visibleBars <= 15 && index > 0) {
+        lastRangeSwitch.current = now;
+        setRange(RANGES[index - 1]);
+      }
+    };
+    container.addEventListener("wheel", onWheel, { passive: true });
+
+    return () => {
+      container.removeEventListener("wheel", onWheel);
+      chart.remove();
+    };
   }, [candlesQuery.data, indicatorsQuery.data, range]);
 
   return (

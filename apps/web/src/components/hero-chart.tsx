@@ -36,6 +36,7 @@ export function HeroChart() {
   const [range, setRange] = useState<(typeof RANGES)[number]>(RANGES[0]);
   const containerRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<IChartApi | null>(null);
+  const lastRangeSwitch = useRef(0);
 
   const { data, isPending } = useQuery({
     queryKey: ["candles", symbol, range.interval],
@@ -89,7 +90,28 @@ export function HeroChart() {
     chart.timeScale().fitContent();
     chartRef.current = chart;
 
+    // TradingView-style zoom escalation: wheel-out at full view widens the
+    // time range (1D→1M→1Y); wheel-in on a tight view goes finer.
+    const onWheel = (event: WheelEvent) => {
+      const logical = chart.timeScale().getVisibleLogicalRange();
+      if (!logical) return;
+      const now = Date.now();
+      if (now - lastRangeSwitch.current < 600) return;
+      const visibleBars = logical.to - logical.from;
+      const index = RANGES.findIndex((option) => option.key === range.key);
+      if (event.deltaY > 0 && visibleBars >= points.length - 2 && index < RANGES.length - 1) {
+        lastRangeSwitch.current = now;
+        setRange(RANGES[index + 1]);
+      } else if (event.deltaY < 0 && visibleBars <= 15 && index > 0) {
+        lastRangeSwitch.current = now;
+        setRange(RANGES[index - 1]);
+      }
+    };
+    const container_ = container;
+    container_.addEventListener("wheel", onWheel, { passive: true });
+
     return () => {
+      container_.removeEventListener("wheel", onWheel);
       chart.remove();
       chartRef.current = null;
     };
