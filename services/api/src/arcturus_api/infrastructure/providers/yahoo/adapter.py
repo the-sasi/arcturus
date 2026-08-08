@@ -15,6 +15,7 @@ from typing import Any
 import yfinance as yf
 
 from arcturus_api.domain.market.errors import ProviderUnavailableError, SymbolNotFoundError
+from arcturus_api.domain.market.fundamentals import CompanyProfile, Fundamentals, NewsArticle
 from arcturus_api.domain.market.models import (
     Candle,
     CandleSeries,
@@ -23,7 +24,16 @@ from arcturus_api.domain.market.models import (
     Quote,
     Symbol,
 )
-from arcturus_api.domain.market.ports import MarketDataProvider
+from arcturus_api.domain.market.ports import (
+    FundamentalDataProvider,
+    MarketDataProvider,
+    NewsProvider,
+)
+from arcturus_api.infrastructure.providers.yahoo.parsers import (
+    parse_fundamentals,
+    parse_news_item,
+    parse_profile,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -54,7 +64,7 @@ def _decimal(value: Any) -> Decimal:
     return Decimal(str(round(float(value), 4)))
 
 
-class YahooMarketDataProvider(MarketDataProvider):
+class YahooMarketDataProvider(MarketDataProvider, FundamentalDataProvider, NewsProvider):
     name = "yahoo"
 
     async def get_quote(self, symbol: Symbol) -> Quote:
@@ -64,6 +74,38 @@ class YahooMarketDataProvider(MarketDataProvider):
         self, symbol: Symbol, interval: Interval, start: datetime, end: datetime
     ) -> CandleSeries:
         return await asyncio.to_thread(self._get_candles_sync, symbol, interval, start, end)
+
+    async def get_profile(self, symbol: Symbol) -> CompanyProfile:
+        info = await asyncio.to_thread(self._get_info_sync, symbol)
+        return parse_profile(symbol, info)
+
+    async def get_fundamentals(self, symbol: Symbol) -> Fundamentals:
+        info = await asyncio.to_thread(self._get_info_sync, symbol)
+        return parse_fundamentals(symbol, info)
+
+    async def get_news(self, symbol: Symbol, limit: int = 10) -> list[NewsArticle]:
+        raw_items = await asyncio.to_thread(self._get_news_sync, symbol, limit)
+        articles = [parse_news_item(item) for item in raw_items]
+        return [article for article in articles if article is not None][:limit]
+
+    def _get_info_sync(self, symbol: Symbol) -> dict[str, Any]:
+        ticker = yf.Ticker(to_yahoo_ticker(symbol))
+        try:
+            info: dict[str, Any] = ticker.info or {}
+        except Exception as exc:
+            raise ProviderUnavailableError(self.name, str(exc)) from exc
+        # Yahoo returns a near-empty stub for unknown tickers
+        if not info or info.get("regularMarketPrice") is None and "sector" not in info:
+            raise SymbolNotFoundError(str(symbol))
+        return info
+
+    def _get_news_sync(self, symbol: Symbol, limit: int) -> list[dict[str, Any]]:
+        ticker = yf.Ticker(to_yahoo_ticker(symbol))
+        try:
+            news = ticker.get_news(count=limit)
+        except Exception as exc:
+            raise ProviderUnavailableError(self.name, str(exc)) from exc
+        return news if isinstance(news, list) else []
 
     def _get_quote_sync(self, symbol: Symbol) -> Quote:
         ticker = yf.Ticker(to_yahoo_ticker(symbol))

@@ -9,6 +9,21 @@
 - [ ] Instruments table (deferred from M1.7 — watchlists ship first;
       instruments land with the strategy engine's data needs in Phase 2)
 
+### Data integrations awaiting API keys (ask user to register)
+- [ ] Finnhub adapter (real-time US quotes, earnings calendar) — needs FINNHUB_API_KEY
+- [ ] NewsAPI adapter (broad news coverage) — needs NEWSAPI_KEY
+- [ ] Alpha Vantage adapter (fundamentals cross-check) — needs ALPHAVANTAGE_KEY
+
+## Done (2026-08-08)
+
+### Data expansion (Yahoo full extraction) + Stock Workspace
+- [x] Ports: FundamentalDataProvider, NewsProvider (per-capability provider config)
+- [x] Yahoo adapter: profile, fundamentals (15 typed metrics + extras), news
+- [x] Pure vendor parsers with fixture tests (both Yahoo news shapes)
+- [x] Endpoints: /api/v1/market/profile|fundamentals|news/{symbol}
+- [x] Stock Workspace page: search, fundamentals grid, about, quote, news
+- [x] Verified live against NSE:RELIANCE; 31 tests green
+
 ## Done (2026-08-07)
 
 ### M1.7 Persistence + Watchlists + CI

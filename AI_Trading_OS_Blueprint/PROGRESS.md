@@ -52,6 +52,28 @@ Notes:
 - GitHub Actions CI written (backend + frontend jobs) — needs a GitHub remote.
 - Quality gates: 23 pytest tests, ruff, mypy --strict, next build, eslint.
 
-Phase 1 Foundation is functionally complete (repo push + Redis caching carried
-as wrap-up items). Next: Phase 2 — Strategy Engine plugin framework and
-deterministic indicator library.
+Phase 1 Foundation is functionally complete. Repo pushed to GitHub over SSH
+(git@github.com:the-sasi/arcturus.git).
+
+## 2026-08-08 — Data expansion: profile, fundamentals, news + Stock Workspace
+
+- Two new hexagonal ports: `FundamentalDataProvider`, `NewsProvider` — each
+  capability independently swappable via settings (`ARCTURUS_FUNDAMENTAL_DATA_PROVIDER`,
+  `ARCTURUS_NEWS_PROVIDER`).
+- Yahoo adapter now implements all three ports. Vendor payload parsing isolated
+  in pure functions (`yahoo/parsers.py`) — unit-tested against fixtures,
+  defensive against Yahoo's shape drift (legacy flat + nested news formats).
+- New domain models: `CompanyProfile`, `Fundamentals` (15 typed metrics +
+  `extras` carrying analyst recommendation, target price, growth rates, etc.),
+  `NewsArticle`.
+- New endpoints: `/api/v1/market/profile|fundamentals|news/{symbol}`.
+- Frontend Stock Workspace page (third live module): symbol search synced to
+  the Zustand workspace store, fundamentals grid, company profile, live quote,
+  news feed.
+- Verified live: RELIANCE profile (404k employees), fundamentals (₹18.06T mcap,
+  PE 24.15, rec strong_buy), 5 real news articles.
+- 31 tests green; ruff, mypy --strict, next build, eslint clean.
+
+Remaining data integrations (blocked on user-provided API keys): Finnhub,
+Alpha Vantage, NewsAPI; Upstox/Zerodha arrive with Phase 4 broker work.
+Next: Redis quote caching, then Phase 2 — Strategy Engine.

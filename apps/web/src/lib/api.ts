@@ -1,4 +1,11 @@
-import type { CandleSeries, Quote, Watchlist } from "./types";
+import type {
+  CandleSeries,
+  CompanyProfile,
+  Fundamentals,
+  NewsArticle,
+  Quote,
+  Watchlist,
+} from "./types";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8600";
 
@@ -40,6 +47,15 @@ export const api = {
   getCandles: (symbol: string, interval = "1d") =>
     request<CandleSeries>(
       `/api/v1/market/candles/${encodeURIComponent(symbol)}?interval=${interval}`,
+    ),
+
+  getProfile: (symbol: string) =>
+    request<CompanyProfile>(`/api/v1/market/profile/${encodeURIComponent(symbol)}`),
+  getFundamentals: (symbol: string) =>
+    request<Fundamentals>(`/api/v1/market/fundamentals/${encodeURIComponent(symbol)}`),
+  getNews: (symbol: string, limit = 10) =>
+    request<NewsArticle[]>(
+      `/api/v1/market/news/${encodeURIComponent(symbol)}?limit=${limit}`,
     ),
 
   listWatchlists: () => request<Watchlist[]>("/api/v1/watchlists"),

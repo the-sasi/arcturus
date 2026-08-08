@@ -31,6 +31,46 @@ export type CandleSeries = {
   candles: Candle[];
 };
 
+export type CompanyProfile = {
+  symbol: SymbolRef;
+  name: string;
+  sector: string | null;
+  industry: string | null;
+  country: string | null;
+  website: string | null;
+  employees: number | null;
+  summary: string | null;
+};
+
+export type Fundamentals = {
+  symbol: SymbolRef;
+  currency: string | null;
+  market_cap: number | null;
+  trailing_pe: string | null;
+  forward_pe: string | null;
+  price_to_book: string | null;
+  eps_trailing: string | null;
+  dividend_yield: string | null;
+  beta: string | null;
+  fifty_two_week_high: string | null;
+  fifty_two_week_low: string | null;
+  average_volume: number | null;
+  revenue: number | null;
+  profit_margin: string | null;
+  return_on_equity: string | null;
+  debt_to_equity: string | null;
+  as_of: string;
+  extras: Record<string, unknown>;
+};
+
+export type NewsArticle = {
+  title: string;
+  publisher: string | null;
+  url: string | null;
+  published_at: string | null;
+  summary: string | null;
+};
+
 export type WatchlistItem = {
   symbol: SymbolRef;
   added_at: string;

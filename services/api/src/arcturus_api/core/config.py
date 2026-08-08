@@ -26,8 +26,10 @@ class Settings(BaseSettings):
     minio_access_key: str = "arcturus"
     minio_secret_key: str = "arcturus-dev"
 
-    # Providers
+    # Providers (each capability is independently swappable)
     market_data_provider: str = "yahoo"
+    fundamental_data_provider: str = "yahoo"
+    news_provider: str = "yahoo"
 
 
 @lru_cache

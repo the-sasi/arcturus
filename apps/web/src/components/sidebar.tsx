@@ -11,7 +11,7 @@ const MODULES: { label: string; href: string; ready: boolean }[] = [
   { label: "Market Intelligence", href: "/market", ready: false },
   { label: "News Intelligence", href: "/news", ready: false },
   { label: "Decision Center", href: "/decisions", ready: false },
-  { label: "Stock Workspace", href: "/workspace", ready: false },
+  { label: "Stock Workspace", href: "/workspace", ready: true },
   { label: "Watchlists", href: "/watchlists", ready: true },
   { label: "Research Lab", href: "/research", ready: false },
   { label: "Strategy Studio", href: "/strategies", ready: false },
