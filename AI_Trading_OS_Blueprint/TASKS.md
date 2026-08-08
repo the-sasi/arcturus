@@ -2,11 +2,20 @@
 
 ## Phase 2 — Decision Engine
 
-### M2.2 Strategy Engine (next)
-- [ ] Strategy plugin interface: analyze/entry/exit/risk/confidence/score/metadata
-- [ ] First deterministic strategies: EMA crossover, RSI mean-reversion, breakout
-- [ ] Strategy runner endpoint: evaluate strategy X on symbol Y
-- [ ] Workspace "Analysis" panel showing strategy verdicts with reasons
+### M2.2b Strategy Engine hardening (next)
+- [ ] Backtesting engine with realistic costs + walk-forward validation
+- [ ] Regime filter (index vs 200-DMA, breadth) gating strategy confidence
+- [ ] Volatility-based position sizing suggestions
+- [ ] Tier 2 strategies: cross-sectional momentum, multi-factor ranking, pairs
+
+### Done (2026-08-09) — M2.2 Strategy Engine core
+- [x] Strategy plugin contract (deterministic, versioned; stance/confidence/
+      entry/stop/reasons — no blind buy/sell per blueprint)
+- [x] EMA crossover, RSI mean-reversion, 20-day range breakout plugins
+- [x] ATR added to indicator library (stop calculation)
+- [x] GET /api/v1/strategies + /strategies/evaluate/{symbol}
+- [x] Workspace Strategy Analysis panel with verdict cards + disclaimer
+- [x] Golden scenario tests on synthetic histories (9 scenarios)
 
 ### M2.3 Market Intelligence Tier 1
 - [ ] Market-wide movers pipeline (beyond curated 50)

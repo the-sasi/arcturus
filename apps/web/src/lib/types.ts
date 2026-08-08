@@ -40,6 +40,26 @@ export type MoversSnapshot = {
   declining: number;
 };
 
+export type StrategyMetadata = {
+  key: string;
+  name: string;
+  version: string;
+  style: string;
+  description: string;
+  typical_holding: string;
+};
+
+export type StrategyVerdict = {
+  strategy: StrategyMetadata;
+  symbol: SymbolRef;
+  stance: "bullish" | "neutral" | "bearish";
+  confidence: number;
+  entry_zone: { low: string; high: string } | null;
+  stop_loss: string | null;
+  reasons: string[];
+  as_of: string;
+};
+
 export type IndicatorSeries = {
   symbol: SymbolRef;
   interval: string;

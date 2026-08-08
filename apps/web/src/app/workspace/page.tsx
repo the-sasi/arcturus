@@ -5,6 +5,7 @@ import { useState } from "react";
 import { ArticleReader } from "@/components/article-reader";
 import { PriceChart } from "@/components/price-chart";
 import { QuoteCard } from "@/components/quote-card";
+import { StrategyPanel } from "@/components/strategy-panel";
 import { SymbolSearch } from "@/components/symbol-search";
 import { api, ApiError } from "@/lib/api";
 import { useWorkspaceStore } from "@/lib/store";
@@ -165,6 +166,7 @@ export default function WorkspacePage() {
       <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-3">
         <div className="space-y-6 lg:col-span-2">
           <PriceChart symbol={selectedSymbol} />
+          <StrategyPanel symbol={selectedSymbol} />
           <Panel
             title="Fundamentals"
             isPending={fundamentals.isPending}

@@ -118,9 +118,37 @@ def bollinger(
     return upper, middle, lower
 
 
+def atr(highs: list[float], lows: list[float], closes: list[float], period: int = 14) -> Series:
+    """Average True Range with Wilder's smoothing."""
+    if not len(highs) == len(lows) == len(closes):
+        raise ValueError("highs/lows/closes must be the same length")
+    _validate(closes, period)
+    length = len(closes)
+    out: Series = [None] * length
+    if length <= period:
+        return out
+    true_ranges = [highs[0] - lows[0]]
+    for index in range(1, length):
+        true_ranges.append(
+            max(
+                highs[index] - lows[index],
+                abs(highs[index] - closes[index - 1]),
+                abs(lows[index] - closes[index - 1]),
+            )
+        )
+    previous = sum(true_ranges[1 : period + 1]) / period
+    out[period] = previous
+    for index in range(period + 1, length):
+        previous = (previous * (period - 1) + true_ranges[index]) / period
+        out[index] = previous
+    return out
+
+
 def _rsi_value(avg_gain: float, avg_loss: float) -> float:
     if avg_loss == 0:
-        return 100.0
+        # No losses: fully overbought — unless there are no gains either
+        # (flat series), which is neutral, not overbought.
+        return 50.0 if avg_gain == 0 else 100.0
     return 100.0 - 100.0 / (1.0 + avg_gain / avg_loss)
 
 

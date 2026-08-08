@@ -156,3 +156,24 @@ Alpha Vantage, NewsAPI; Upstox/Zerodha arrive with Phase 4 broker work.
 - 71 tests green; all gates clean.
 - News multi-source expansion consciously deferred to backlog in favor of
   Phase 2 (Yahoo adequate for now; port already exists).
+
+## 2026-08-09 — M2.2 Strategy Engine core
+
+- Strategy plugin framework (`domain/strategy/`): deterministic, versioned
+  plugins producing StrategyVerdict — stance (bullish/neutral/bearish),
+  confidence 0-100 (rule-scored heuristic, explicitly NOT win probability),
+  entry zone, ATR-based stop, and number-backed plain-language reasons.
+  No blind Buy/Sell — verdicts feed the future Decision Engine.
+- Tier 1 plugins: EMA 20/50 crossover (freshness/price/volume confirmation),
+  RSI mean-reversion (oversold-in-uptrend filter — no edge in downtrends),
+  20-day range breakout (volume-confirmed; unconfirmed breakouts stay neutral).
+- ATR (Wilder) added to indicator library; RSI flat-series edge case fixed
+  (was 100, now neutral 50).
+- Endpoints: GET /api/v1/strategies, /strategies/evaluate/{symbol}.
+- Workspace Strategy Analysis panel: verdict cards with confidence bars,
+  entry/stop, expandable reasons, and a decision-support disclaimer.
+- Verified live on RELIANCE: bearish EMA structure (62 sessions old),
+  RSI 58.6 no setup, coiling 0.8% under the 20-day high — coherent reads.
+- 80 tests green (9 golden strategy scenarios); all gates clean.
+- Next: M2.2b — backtester with realistic costs + walk-forward validation,
+  regime filter, position sizing; then Tier 2 quant strategies.

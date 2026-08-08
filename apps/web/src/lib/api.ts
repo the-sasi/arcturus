@@ -8,6 +8,7 @@ import type {
   MoversSnapshot,
   NewsArticle,
   Quote,
+  StrategyVerdict,
   Watchlist,
 } from "./types";
 
@@ -54,6 +55,9 @@ export const api = {
     ),
 
   getMovers: () => request<MoversSnapshot>("/api/v1/market/movers"),
+
+  evaluateStrategies: (symbol: string) =>
+    request<StrategyVerdict[]>(`/api/v1/strategies/evaluate/${encodeURIComponent(symbol)}`),
 
   getIndicators: (symbol: string, interval = "1d", specs = "ema:20,ema:50,rsi:14") =>
     request<IndicatorSeries>(
