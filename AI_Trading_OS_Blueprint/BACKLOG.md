@@ -69,8 +69,9 @@ Shortlisted candidates, each with the trigger that would make it worth building
 
 | Candidate | What it gives us | Trigger to adopt |
 |---|---|---|
-| **Angel One SmartAPI** (`smartapi.angelbroking.com`) | India-native live + historical NSE/BSE candles AND order execution behind one account. Highest-value single integration in the whole list for us. | Phase 4 (paper→live). Also revisit sooner if Yahoo's Indian data proves unreliable in R2. Needs a demat account. |
-| **Twelve Data** | Second opinion on NSE/BSE daily bars — cross-source candle validation. | Only if R2's deterministic checks prove insufficient, i.e. we find bad bars that single-source validation cannot detect (e.g. silently rewritten split-adjusted history). |
+| **ICICI Breeze API** (`api.icicidirect.com`) — *user already holds an ICICI Direct subscription (2026-08-17)* | Exchange-sourced NSE/BSE candles (1sec/1min/5min/30min/1day, 3y depth, 1000 candles per v2 request), live WebSocket tick + OHLCV streaming, quotes, option chains, portfolio, and order placement. Free with the account. Official `breeze-connect` Python SDK (1.0.69, Apr 2026). | **PROMOTED to NEXT (2026-08-17)**: adopt as the second market-data provider right after R2's vendor-independent checks land, so Yahoo can be cross-validated against exchange-sourced data. Becomes the execution adapter in Phase 4. |
+| **Angel One SmartAPI** (`smartapi.angelbroking.com`) | Same shape as Breeze (India-native data + execution). | Superseded by Breeze for now — no reason to hold two broker accounts. Keep as fallback if Breeze proves unreliable. |
+| **Twelve Data** | Second opinion on NSE/BSE daily bars. | **Dropped** — Breeze covers cross-source validation better (exchange-sourced, free, no request budget to ration). |
 | **MarketAux** / **StockData** | Market news with *tagged tickers* + sentiment — solves the symbol-attribution problem in our news pipeline. | When the multi-source news pipeline is picked up (see "News breadth" above). |
 | **Frankfurter** / **currency-api** | Keyless FX (ECB-sourced) for the USD/INR essentials tile. | Only if Yahoo's FX quote proves flaky. Yahoo covers it today. |
 | **FRED** (free key) | Macro series (rates, CPI, yield curve) for a macro-aware regime model. | When regime detection outgrows the 200-DMA rule and we have evidence the rule is insufficient. |
@@ -91,3 +92,25 @@ complete but we do not cover mutual funds.
 Carried forward from earlier: Finnhub, NewsAPI, Alpha Vantage adapters remain
 blocked on API keys (Alpha Vantage's free tier is now very restrictive — verify
 current limits before building).
+
+### Breeze API — known constraints (verified 2026-08-17)
+
+- **Session token is a daily browser login.** Auth is App Key + Secret, but the
+  session token comes from `api.icicidirect.com/apiuser/login?api_key=…` and must
+  be regenerated (in practice daily). Consequence: unattended overnight jobs
+  cannot assume a live session — one more reason the research scheduler stays
+  NOT NEEDED. Design: store the token, surface a "reconnect" action in the UI,
+  and **fail over to Yahoo** whenever the session is dead (fail-open, like the cache).
+- **ICICI uses its own stock codes** (`get_names()` maps them). Vendor symbol
+  mapping stays quarantined inside the adapter, exactly as the Yahoo `.NS`/`.BO`
+  mapping is today — no change to the canonical `EXCHANGE:TICKER` domain symbol.
+- **Data rate limits are not published** (only orders: 10/sec). Treat
+  conservatively; cache aggressively; discover empirically before any sweep.
+- **Market orders are rejected** and converted to aggressive limit orders
+  (3% equity band). This changes fill assumptions — the backtester's next-open
+  fill model must be revisited when execution lands, not before.
+- **Licensing**: broker feeds are per-account and not redistributable. Fine for
+  single-user personal use; a wall if Arcturus ever goes multi-user.
+- **Credentials are secrets**: App Key / Secret / session token live in `.env`
+  only, never committed, never logged. Per ADR-008 broker credentials are on the
+  never-self-modifiable list.
