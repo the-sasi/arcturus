@@ -25,13 +25,22 @@ phase builds on without redesign.
 - LangGraph Supervisor + first specialist agents (Technical, Risk, Explanation)
 
 ## Phase 2R: Quant Research Platform (STARTED 2026-08-09; plan + audit in
-RESEARCH_PLATFORM_PLAN.md, governed by ADR-008)
+RESEARCH_PLATFORM_PLAN.md, governed by ADR-008 and re-scoped by ADR-009)
+
+Scope is gated by ADR-009 "build what matters" — classification table lives in
+RESEARCH_PLATFORM_PLAN.md §2. Nothing marked LATER is built while a NOW is open.
 
 - R1 ✔ Experiment Registry + full fitness metrics
-- R2 Data Quality Engine · R3 Strategy Registry v2 · R4 Validation ladder
-- R5 Degradation monitor + scheduler · R6 Improvement proposals (human approval)
-- R7 Decision memory · R8 Research UI · R9 Discovery engine
-- Phase 3 gate: Tool Registry + Gateway before any agent ships
+- **NOW**: R2 Data Quality Engine · R3-lite strategy comparison (leaderboard over
+  the existing experiments table)
+- **NEXT**: R4 Validation ladder (out-of-sample → walk-forward); position sizing
+  and chart signal markers
+- **LATER** (gated on real evidence): full strategy registry lifecycle,
+  degradation monitor, improvement proposals, decision memory, research UI,
+  discovery engine
+- **NOT NEEDED now**: research scheduler/worker tier, Qdrant/Neo4j/MinIO code
+  paths (pgvector-first if vectors are ever needed), agent tooling
+- Phase 3 gate stands: Tool Registry + Gateway before any agent ships
 
 ## Phase 3: Research
 

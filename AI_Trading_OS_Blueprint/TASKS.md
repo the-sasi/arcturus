@@ -2,10 +2,26 @@
 
 ## Phase 2R — Quant Research Platform (see RESEARCH_PLATFORM_PLAN.md)
 
-### R2 Data Quality Engine (next)
+Scope gated by ADR-009 (build what matters). Only NOW items are open work.
+
+### R2 Data Quality Engine — NOW (next)
 - [ ] Deterministic candle validation (OHLC sanity, gaps, duplicates, staleness)
 - [ ] VALID/WARNING/INVALID status; backtester refuses INVALID input
 - [ ] Quality status recorded on experiments
+
+### R3-lite Strategy comparison — NOW (after R2)
+- [ ] Leaderboard query over the existing experiments table (no new tables)
+- [ ] GET /api/v1/research/leaderboard — best strategy per symbol/metric
+
+### Deferred by ADR-009 (do not build yet)
+- LATER: strategy-registry lifecycle · degradation monitor · improvement
+  proposals · decision memory · research UI · discovery engine
+- NOT NEEDED now: research scheduler/worker tier · Qdrant/Neo4j/MinIO code paths
+  (pgvector-first) · agent registry/gateway (no agents exist)
+
+### Done (2026-08-09) — ADR-009 pragmatism pass
+- [x] ADR-009 recorded; ADR-002 (Qdrant-first) superseded by pgvector-first
+- [x] RESEARCH_PLATFORM_PLAN.md §2 re-scoped NOW/NEXT/LATER/NOT NEEDED
 
 ### Done (2026-08-09) — R1 Experiment Registry + fitness metrics
 - [x] Architecture audit + phased plan (RESEARCH_PLATFORM_PLAN.md); ADR-008

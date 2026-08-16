@@ -25,7 +25,7 @@ domain and can be extracted into services later without domain changes.
 
 ---
 
-## ADR-002: Qdrant as initial vector store (Accepted, 2026-08-07)
+## ADR-002: Qdrant as initial vector store (Superseded by ADR-009, 2026-08-09)
 
 **Context.** Blueprint allows Milvus or Qdrant. Vector access will go through a
 `VectorStorePort` regardless, so the engine is swappable by design.
@@ -36,6 +36,11 @@ pulsar) is unjustified at this stage.
 
 **Consequences.** Smaller local stack. If scale later demands Milvus, only a new
 adapter behind `VectorStorePort` is required — zero domain changes.
+
+**Superseded (2026-08-09).** ADR-009 makes pgvector in the existing
+PostgreSQL/TimescaleDB the first vector store: no second datastore is justified
+before semantic search has a real, measured need. Qdrant remains an option only
+if pgvector demonstrably fails at our scale.
 
 ---
 
@@ -134,3 +139,56 @@ self-modification in a trading system is unacceptable.
 **Consequences.** Slower "autonomy" than naive agent designs, by design. The
 phased plan lives in RESEARCH_PLATFORM_PLAN.md; each phase updates docs and
 passes all quality gates.
+
+---
+
+## ADR-009: Build what matters — pragmatism over architecture (Accepted, 2026-08-09)
+
+**Context.** Arcturus has accumulated provisioned-but-unused infrastructure
+(Qdrant, Neo4j, MinIO containers with zero code paths) and a nine-phase research
+wishlist (RESEARCH_PLATFORM_PLAN.md) written from an aspirational directive. The
+risk is a beautifully layered system that never earns money or trust because
+effort went to architecture instead of product value.
+
+**Decision.** Every component, dependency, and abstraction must pass five
+questions BEFORE it is built:
+
+1. What concrete problem does it solve?
+2. Is it needed **now**, or is it speculation?
+3. Can the existing architecture already do it?
+4. What measurable value does it add?
+5. Is the added complexity justified?
+
+If any answer is unclear: **do not implement it.**
+
+Standing consequences of that rule:
+
+- **Classification gate.** Every roadmap item is labelled NOW / NEXT / LATER /
+  NOT NEEDED. Nothing labelled LATER is built while anything labelled NOW is
+  incomplete.
+- **Priority order** (higher wins when trading off): correctness → reliable
+  market data → deterministic calculations → backtest correctness → strategy
+  evaluation → risk controls → explainability → reproducibility →
+  observability → UX → performance → advanced AI.
+- **Defaults**: one modular service (no microservices) · one database
+  (PostgreSQL/TimescaleDB; **pgvector before Qdrant**, **PG relations before
+  Neo4j**) · deterministic code before LLMs · rules before ML · SQL before RAG ·
+  the app's own mechanisms before a scheduler/worker tier · existing infra
+  before new infra.
+- **Stop and ask.** Any change that expands the architecture or adds an
+  infrastructure dependency requires explicit human approval first — it is not
+  an implementation detail.
+- **No speculative abstractions**: no ports, plugin layers, or provider
+  interfaces for a second implementation that does not exist yet. Two real
+  cases justify an abstraction; one does not.
+
+**Consequences.** RESEARCH_PLATFORM_PLAN.md is re-scoped under this ADR (see its
+"Build-what-matters classification" section): R2 and R3-lite are NOW, the
+validation ladder and degradation monitor are NEXT, and the discovery engine,
+agent tooling, research scheduler, Qdrant/Neo4j code paths, and the full
+proposal workflow are LATER or NOT NEEDED until real evidence demands them.
+Dormant containers stay in compose (they cost nothing when stopped) but no code
+may target them; the vector-search need, when it arrives, is served by pgvector
+in the existing database. ADR-002 (Qdrant as initial vector store) is thereby
+**superseded for the current phase** — revisit only if pgvector demonstrably
+fails at our scale.

@@ -219,3 +219,34 @@ Alpha Vantage, NewsAPI; Upstox/Zerodha arrive with Phase 4 broker work.
     Calmar 0.35, profit factor 3.31, expectancy +2.16%/trade.
 - 103 tests green; all gates clean; migration 0003 applied.
 - Next: R2 Data Quality Engine.
+
+## 2026-08-09 — ADR-009 pragmatism pass (no code change)
+
+- Received the "BUILD WHAT MATTERS" directive: no over-engineering; every
+  component must justify itself (what problem · why now · can existing
+  architecture do it · measurable value · complexity justified) — unclear
+  means do not build.
+- Recorded as **ADR-009**, including the priority order (correctness →
+  data reliability → deterministic calc → backtest correctness → strategy
+  evaluation → risk → explainability → reproducibility → observability →
+  UX → performance → advanced AI) and the defaults: one service, one
+  database, deterministic before LLM, existing infra before new, and
+  **stop-and-ask before expanding architecture**.
+- ADR-002 (Qdrant as initial vector store) marked **superseded**: pgvector in
+  the existing PostgreSQL/TimescaleDB is the first vector store if semantic
+  search is ever actually needed.
+- RESEARCH_PLATFORM_PLAN.md §2 rewritten as a NOW/NEXT/LATER/NOT NEEDED
+  classification. Result of applying the gate to the 9-phase wishlist:
+  - NOW: R2 Data Quality Engine · R3-lite strategy comparison (leaderboard
+    over the existing experiments table — no new tables).
+  - NEXT: R4 validation ladder (out-of-sample → walk-forward); position
+    sizing; chart signal markers.
+  - LATER: registry lifecycle, degradation monitor, improvement proposals,
+    decision memory, research UI, discovery engine — each gated on evidence
+    that does not exist yet (track record, paper engine, proposal producer).
+  - NOT NEEDED now: research scheduler/worker tier, Qdrant/Neo4j/MinIO code
+    paths, agent registry/gateway (zero agents exist).
+- Qdrant/Neo4j/MinIO containers stay in compose but are documented as DORMANT
+  with no code targeting them; removing them is a separate approved change.
+- ROADMAP/TASKS/README updated to carry the classification.
+- Next: R2 Data Quality Engine.

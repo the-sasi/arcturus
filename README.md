@@ -95,8 +95,10 @@ FastAPI api (Docker: api, host port 8600)
         sqlalchemy repos      → watchlists + instruments in TimescaleDB (Alembic)
 
 Data stores (Docker):  TimescaleDB :5432 (in use) · Redis :6379 (in use)
-                       Qdrant :6333, Neo4j :7687, MinIO :9000 (provisioned for
-                       Phases 2–3: RAG, knowledge graph, object storage)
+                       Qdrant :6333, Neo4j :7687, MinIO :9000 — DORMANT, no code
+                       targets them (ADR-009: one database; pgvector before Qdrant,
+                       PG relations before Neo4j). Kept running only as a cheap
+                       option; removal is a separate approved change.
 ```
 
 Principles: hexagonal architecture — business logic depends on ports, vendors
@@ -163,6 +165,14 @@ The blueprint directory is the single source of truth:
 - [TASKS.md](AI_Trading_OS_Blueprint/TASKS.md) — current work items
 - [DECISIONS.md](AI_Trading_OS_Blueprint/DECISIONS.md) — architecture decision records
 - [PROGRESS.md](AI_Trading_OS_Blueprint/PROGRESS.md) — status after every completed task
+
+Design rule (ADR-009 — "build what matters"): before any new component,
+dependency, or abstraction, answer *what problem, why now, can existing
+architecture do it, what measurable value, is the complexity justified* — if
+unclear, it is not built. Every roadmap item carries a NOW / NEXT / LATER /
+NOT NEEDED label (RESEARCH_PLATFORM_PLAN.md §2), and nothing labelled LATER is
+built while a NOW is open. Expanding the architecture or adding infrastructure
+requires explicit approval first.
 
 Quality gates (all must pass; CI runs them on every push):
 `ruff check` · `ruff format --check` · `mypy --strict` · `pytest` ·
