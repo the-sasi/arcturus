@@ -86,6 +86,9 @@ re-scopes it: each item must name the concrete problem it solves *today*.
 | MinIO object storage | **NOT NEEDED** | Nothing produces artefacts too large for the DB. |
 | Agent tooling: tool registry, gateway, agent evaluation (§12–14, §19–21) | **NOT NEEDED YET** | Zero agents exist. Specs stay recorded as the Phase 3 gate: no agent ships without the gateway — but neither is built until an agent has a job deterministic code cannot do. |
 | Alerts engine (§34), cost/perf metrics surface (§35–36) | LATER | No signals to alert on yet; no measured bottleneck. |
+| Internal backtest engine — minimal scope (see §5) | **NOW** (maintain) | The reproducible reference that the experiment registry and future agents cite. Grows only through the §5 growth rule. |
+| External backtest import — TradingView first (see §5) | **NEXT** (after R3-lite and R4) | Uses TradingView's strengths without rebuilding them. Moves up if strategies are already being run in TradingView and need comparing/citing. |
+| Internal engine feature parity with TradingView (strategy-tester UI, intrabar/tick simulation, scripting language, optimisers) | **NOT NEEDED** | External tools already do this better; duplicating them violates ADR-009. |
 
 Dormant containers (Qdrant, Neo4j, MinIO) stay in `docker-compose.yml` for now —
 they cost nothing while stopped — but **no code may target them**. Removing them
@@ -112,7 +115,96 @@ from compose is a separate, explicitly-approved change (ADR-009 stop-and-ask).
 
 - **Overfitting theater**: metrics without the R4 ladder can bless junk;
   until R4 lands, experiment records carry `validation: "in-sample-only"`.
+- **External results mistaken for validated evidence**: TradingView numbers come
+  from a different engine, feed, and fill model. Mitigation (§5.2):
+  `external-unverified` label, metrics recomputed from imported trades, no
+  leaderboard mixing, agents cite them only as external evidence.
+- **Internal engine scope creep**: pressure to match TradingView features.
+  Mitigation: the §5.1 growth rule.
 - **Scope creep**: Qdrant/Neo4j/agents stay dormant until their inputs exist.
 - **Data volume**: experiments are small JSON rows; Timescale is fine.
 - **Safety**: no execution plane exists yet — the boundary list in ADR-008
   is recorded now so it predates any live-trading code.
+
+## 5. Backtesting strategy: minimal internal engine + external integrations (2026-09-15)
+
+> **Principle:** Maintain a minimal deterministic internal backtesting capability
+> for reproducible agent-driven research, while supporting external backtesting
+> integrations such as TradingView where they provide superior functionality.
+
+Backtesting is Trading-owned (shared-platform boundary, ADR-011). Investing
+portfolio simulation is a separate concern and is not covered here.
+
+### 5.1 Internal engine — the reproducible reference
+
+The prefix-replay engine (ADR-007) exists so that any number an agent or the
+experiment registry cites can be re-run by Arcturus and give the same answer.
+
+**In scope (keep or build):**
+- Deterministic replay of the *registered* strategy plugins — the same code that
+  produces live verdicts (one source of truth).
+- Data quality gate on inputs (R2: INVALID candles are refused ✔).
+- Point-in-time correctness: prefix replay today; point-in-time fundamentals
+  and events once they enter the shared platform.
+- A simple, explicit, versioned execution model: next-open fills, ATR stops,
+  gap handling, per-side costs (`ENGINE_VERSION`).
+- Experiment registry records: strategy version, data window, config, engine
+  version, data quality report, metrics.
+- R4 validation ladder (out-of-sample → walk-forward); position sizing once built.
+
+**Out of scope (do not build):** strategy-tester UI parity, intrabar/tick or
+bar-magnifier simulation, a strategy scripting language, parameter optimisers
+or genetic search (R9 stays LATER), broker-grade order types, and multi-asset
+portfolio backtesting.
+
+**Growth rule:** the internal engine gains a capability only when
+agent-driven research needs a *reproducible* number it cannot yet produce.
+Anything needed only for human exploration belongs in an external tool.
+
+### 5.2 External integrations — TradingView first
+
+**Role:** human-facing exploration, plus features where external platforms are
+better (Pine Script strategies, intrabar fill modelling, the indicator library,
+visual trade markers).
+
+**Access (VERIFY_REQUIRED):** no public TradingView API for running backtests or
+retrieving Strategy Tester results is known — confirm before building. The
+realistic mechanisms are:
+- **Trade-list import:** the user exports Strategy Tester results and uploads
+  the file (source type USER_PROVIDED).
+- **Webhook alerts** (paid TradingView plans): *live signals*, not backtests.
+  Out of scope for backtesting.
+- No scraping or UI automation of TradingView, per the data-platform access rules.
+
+**Import contract** (to be implemented as one Trading-owned slice):
+- `ExternalBacktestResult`:
+  - platform `tradingview`, plus the strategy name and version as the user reports them
+  - symbol resolved through entity resolution
+  - the external platform's price feed recorded as the data source — not ours
+  - import provenance: file content hash, `imported_at`, uploader
+  - the imported trade list is stored as the external *fact*
+- **Metrics:** recomputed deterministically by Arcturus from the imported trades
+  with the same metric code as the internal engine. The platform's own summary
+  figures are kept alongside for comparison, never substituted.
+- **Label:** `validation = "external-unverified"`. External results are never
+  ranked in the internal leaderboard (R3-lite) — they are shown alongside it.
+- **Registry:** a `tradingview` entry in the source registry with licence status
+  UNKNOWN until the terms are reviewed.
+
+**Reconciliation (optional):** when the same rules exist as an internal plugin,
+run both over the same window. Record material metric differences as a
+`DataConflict` (external vs internal engine) — never silently average or pick one.
+
+**Agent rule:** an agent may cite an external backtest only as *external
+evidence*, with platform and provenance. Claims of edge, robustness or
+validation status require the internal engine.
+
+### 5.3 Why this split
+
+| Concern | Internal engine | External (TradingView) |
+|---|---|---|
+| Reproducible by Arcturus | Yes (versioned code + DQ-gated data) | No (black-box engine and feed) |
+| Same code as live verdicts | Yes | No |
+| Point-in-time / no-lookahead guarantee | By construction, tested | Platform-dependent; unverifiable |
+| Rich exploration, intrabar fills, Pine ecosystem | Deliberately minimal | Strong |
+| Suitable for agent citation | Yes | Only as labelled external evidence |

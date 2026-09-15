@@ -13,6 +13,23 @@ Scope gated by ADR-009 (build what matters). Only NOW items are open work.
 - [ ] Leaderboard query over the existing experiments table (no new tables)
 - [ ] GET /api/v1/research/leaderboard — best strategy per symbol/metric
 
+### Backtesting stance — minimal internal engine + external integrations (plan §5)
+- [x] Principle recorded: ADR-007 amended; RESEARCH_PLATFORM_PLAN.md §5 (2026-09-15)
+- NOW (maintain): internal engine stays the reproducible reference. Add
+  capabilities only via the §5.1 growth rule.
+- NEXT (after R3-lite and R4) — TradingView trade-list import:
+  - [ ] Verify TradingView access and terms (no public backtest API assumed)
+  - [ ] `tradingview` entry in the source registry (licence UNKNOWN until reviewed)
+  - [ ] `ExternalBacktestResult` contract:
+    - [ ] provenance (file hash, imported_at)
+    - [ ] symbol resolved through entity resolution
+    - [ ] stored with `external-unverified` label
+  - [ ] Metrics recomputed from imported trades, reusing the internal metric code
+  - [ ] Shown alongside, never ranked inside, the internal leaderboard
+  - [ ] Optional reconciliation versus an internal plugin; differences → DataConflict
+- NOT NEEDED: internal parity with external strategy testers (UI, intrabar
+  simulation, scripting language, optimisers)
+
 ### Deferred by ADR-009 (do not build yet)
 - LATER: strategy-registry lifecycle · degradation monitor · improvement
   proposals · decision memory · research UI · discovery engine

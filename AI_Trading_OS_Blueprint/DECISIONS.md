@@ -110,6 +110,28 @@ strategy. O(n²) replay is acceptable at daily frequency (~750 bars); results ca
 in Redis. If Tier 2 needs vectorized speed (universe-wide scans), revisit vectorbt
 as an *additional* fast path — never as the primary definition of a strategy.
 
+**Amended (2026-09-15) — minimal internal engine + external integrations.**
+Directive: *"Maintain a minimal deterministic internal backtesting capability
+for reproducible agent-driven research, while supporting external backtesting
+integrations such as TradingView where they provide superior functionality."*
+
+- The internal engine stays **minimal**: it is the reproducible reference for
+  the experiment registry and agent citations. It grows only when agent research
+  needs a reproducible number it cannot produce. There is no feature parity with
+  external strategy testers (UI, intrabar simulation, scripting, optimisers).
+- **External engines** (TradingView first) are integrated for what they do
+  better. Their results enter as user-provided imports:
+  - the trade list is stored as an external fact
+  - metrics are recomputed by Arcturus from those trades
+  - provenance is recorded (platform, file hash, import time)
+  - results are labelled `external-unverified`
+- External results are never ranked with internal results. Agents cite them only
+  as external evidence; claims of edge or validation require the internal engine.
+- No public TradingView backtest API is assumed (VERIFY_REQUIRED); no scraping or
+  UI automation.
+
+Details: RESEARCH_PLATFORM_PLAN.md §5.
+
 ---
 
 ## ADR-008: Research plane & controlled self-improvement (Accepted, 2026-08-09)

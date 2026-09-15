@@ -41,6 +41,11 @@ RESEARCH_PLATFORM_PLAN.md §2. Nothing marked LATER is built while a NOW is open
 - **NOT NEEDED now**: research scheduler/worker tier, Qdrant/Neo4j/MinIO code
   paths (pgvector-first if vectors are ever needed), agent tooling
 - Phase 3 gate stands: Tool Registry + Gateway before any agent ships
+- **Backtesting stance (2026-09-15, ADR-007 amended, plan §5)**:
+  - The internal engine stays minimal: it is the reproducible reference for agent research.
+  - External engines (TradingView first) are integrated as user-provided imports
+    labelled `external-unverified`. **NEXT**, after R3-lite and R4.
+  - Internal feature parity with TradingView is **NOT NEEDED**.
 
 ## Phase 3: Research
 
