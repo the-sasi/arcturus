@@ -32,6 +32,8 @@ def parse_nse_equity_csv(text: str) -> list[Instrument]:
                 name=name,
                 asset_class=AssetClass.EQUITY,
                 currency="INR",
+                # Raw as published; validated before identity use
+                isin=cleaned.get("ISIN NUMBER", "").upper() or None,
                 attributes={"series": series},
             )
         )

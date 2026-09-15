@@ -34,6 +34,7 @@ async def _fetch_text(client: httpx.AsyncClient, url: str) -> str:
 
 class NseDirectoryProvider(InstrumentDirectoryProvider):
     name = "nse"
+    source_id = "nse_archives"
 
     async def fetch_listings(self) -> list[Instrument]:
         last_error: Exception | None = None
@@ -54,6 +55,7 @@ class NasdaqTraderDirectoryProvider(InstrumentDirectoryProvider):
     """NASDAQ + NYSE + AMEX from the public Nasdaq Trader symbol directory."""
 
     name = "nasdaqtrader"
+    source_id = "nasdaqtrader"
 
     async def fetch_listings(self) -> list[Instrument]:
         try:

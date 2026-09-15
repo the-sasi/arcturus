@@ -8,9 +8,10 @@ Nothing above this layer knows Yahoo exists.
 import asyncio
 import logging
 import math
+from collections.abc import Callable
 from datetime import UTC, datetime
 from decimal import Decimal
-from typing import Any
+from typing import Any, ParamSpec, TypeVar
 
 import yfinance as yf
 
@@ -36,6 +37,14 @@ from arcturus_api.infrastructure.providers.yahoo.parsers import (
 )
 
 logger = logging.getLogger(__name__)
+
+P = ParamSpec("P")
+R = TypeVar("R")
+
+# yfinance has no reliable per-call timeout; bound every call so a hung Yahoo
+# request degrades to ProviderUnavailableError instead of hanging the API.
+# (The worker thread is abandoned, not killed — it finishes in the background.)
+_DEFAULT_TIMEOUT_SECONDS = 15.0
 
 _SUFFIX_BY_EXCHANGE: dict[Exchange, str] = {
     Exchange.NSE: ".NS",
@@ -68,26 +77,39 @@ def _decimal(value: Any) -> Decimal:
 
 
 class YahooMarketDataProvider(MarketDataProvider, FundamentalDataProvider, NewsProvider):
-    name = "yahoo"
+    name = "yahoo"  # also its data source registry id
+
+    def __init__(self, timeout_seconds: float = _DEFAULT_TIMEOUT_SECONDS) -> None:
+        self._timeout_seconds = timeout_seconds
+
+    async def _offload(self, function: Callable[P, R], *args: P.args, **kwargs: P.kwargs) -> R:
+        try:
+            return await asyncio.wait_for(
+                asyncio.to_thread(function, *args, **kwargs), timeout=self._timeout_seconds
+            )
+        except TimeoutError as exc:
+            raise ProviderUnavailableError(
+                self.name, f"timed out after {self._timeout_seconds:g}s"
+            ) from exc
 
     async def get_quote(self, symbol: Symbol) -> Quote:
-        return await asyncio.to_thread(self._get_quote_sync, symbol)
+        return await self._offload(self._get_quote_sync, symbol)
 
     async def get_candles(
         self, symbol: Symbol, interval: Interval, start: datetime, end: datetime
     ) -> CandleSeries:
-        return await asyncio.to_thread(self._get_candles_sync, symbol, interval, start, end)
+        return await self._offload(self._get_candles_sync, symbol, interval, start, end)
 
     async def get_profile(self, symbol: Symbol) -> CompanyProfile:
-        info = await asyncio.to_thread(self._get_info_sync, symbol)
+        info = await self._offload(self._get_info_sync, symbol)
         return parse_profile(symbol, info)
 
     async def get_fundamentals(self, symbol: Symbol) -> Fundamentals:
-        info = await asyncio.to_thread(self._get_info_sync, symbol)
+        info = await self._offload(self._get_info_sync, symbol)
         return parse_fundamentals(symbol, info)
 
     async def get_news(self, symbol: Symbol, limit: int = 10) -> list[NewsArticle]:
-        raw_items = await asyncio.to_thread(self._get_news_sync, symbol, limit)
+        raw_items = await self._offload(self._get_news_sync, symbol, limit)
         articles = [parse_news_item(item) for item in raw_items]
         return [article for article in articles if article is not None][:limit]
 

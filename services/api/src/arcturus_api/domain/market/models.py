@@ -80,6 +80,9 @@ class Instrument(BaseModel):
     name: str
     asset_class: AssetClass
     currency: str
+    # As reported by the listing source; validated by the data quality engine
+    # before it is used as an identity key (persisted in company_identifiers)
+    isin: str | None = None
     # Class-specific fields (strike, expiry, contract size, underlying, …)
     attributes: dict[str, Any] = Field(default_factory=dict)
 

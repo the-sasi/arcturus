@@ -82,6 +82,7 @@ class InstrumentDirectoryProvider(ABC):
     """Port for fetching an exchange's official listing directory."""
 
     name: str
+    source_id: str  # key in the data source registry (domain.data.sources)
 
     @abstractmethod
     async def fetch_listings(self) -> list[Instrument]:

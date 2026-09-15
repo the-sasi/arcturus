@@ -8,12 +8,14 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from arcturus_api.api.deps import (
     get_indicator_service,
     get_market_service,
+    get_quality_service,
     get_regime_service,
     get_research_service,
 )
 from arcturus_api.application.market.indicator_service import IndicatorService
 from arcturus_api.application.market.regime_service import RegimeService
 from arcturus_api.application.market.service import MarketDataService, ResearchDataService
+from arcturus_api.application.quality.service import DataQualityService
 from arcturus_api.domain.indicators.models import IndicatorSeries, UnknownIndicatorError
 from arcturus_api.domain.market.directory import MoversSnapshot
 from arcturus_api.domain.market.errors import (
@@ -29,6 +31,7 @@ from arcturus_api.domain.market.fundamentals import (
 )
 from arcturus_api.domain.market.models import CandleSeries, Exchange, Interval, Quote
 from arcturus_api.domain.market.regime import MarketRegime
+from arcturus_api.domain.quality.models import DataQualityReport
 
 router = APIRouter(prefix="/market", tags=["market"])
 
@@ -36,6 +39,21 @@ MarketService = Annotated[MarketDataService, Depends(get_market_service)]
 ResearchService = Annotated[ResearchDataService, Depends(get_research_service)]
 Indicators = Annotated[IndicatorService, Depends(get_indicator_service)]
 Regime = Annotated[RegimeService, Depends(get_regime_service)]
+Quality = Annotated[DataQualityService, Depends(get_quality_service)]
+
+
+@router.get("/quality/{symbol}")
+async def get_candle_quality(
+    symbol: str, service: Quality, interval: Interval = Interval.DAY_1
+) -> DataQualityReport:
+    """Data quality report for the default candle window: VALID / WARNING / INVALID
+    with per-dimension status and every issue found."""
+    try:
+        return await service.assess_candles(symbol, interval)
+    except SymbolNotFoundError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    except ProviderUnavailableError as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
 
 
 @router.get("/regime")

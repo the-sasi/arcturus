@@ -1,7 +1,10 @@
 """Instrument directory domain: browsing/searching the listed universe."""
 
+from enum import StrEnum
+
 from pydantic import BaseModel, ConfigDict
 
+from arcturus_api.domain.identity.models import IdentitySyncResult
 from arcturus_api.domain.market.models import Instrument, Quote
 
 
@@ -14,12 +17,21 @@ class InstrumentPage(BaseModel):
     offset: int
 
 
+class SyncStatus(StrEnum):
+    OK = "ok"
+    FAILED = "failed"
+
+
 class DirectorySyncResult(BaseModel):
     model_config = ConfigDict(frozen=True)
 
-    source: str
+    source: str  # data source registry id
+    status: SyncStatus
     fetched: int
     upserted: int
+    error: str | None = None
+    # Identity evidence taken from the listing (None when the source carries no ISINs)
+    identity: IdentitySyncResult | None = None
 
 
 class MoversSnapshot(BaseModel):

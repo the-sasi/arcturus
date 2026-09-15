@@ -5,6 +5,7 @@ from datetime import datetime
 from pydantic import BaseModel, ConfigDict
 
 from arcturus_api.domain.market.models import Symbol
+from arcturus_api.domain.quality.models import DataQualityReport
 from arcturus_api.domain.strategy.models import StrategyMetadata
 
 
@@ -54,3 +55,5 @@ class BacktestResult(BaseModel):
     expectancy_pct: float | None  # mean return per trade; None without trades
     # Honesty marker until the R4 validation ladder lands (ADR-008)
     validation: str = "in-sample-only"
+    # Quality of the candles the run consumed (never INVALID: those are refused)
+    data_quality: DataQualityReport | None = None

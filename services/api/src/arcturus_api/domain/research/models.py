@@ -11,6 +11,8 @@ from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict
 
+from arcturus_api.domain.quality.models import DataQualityReport
+
 
 class Experiment(BaseModel):
     model_config = ConfigDict(frozen=True)
@@ -27,6 +29,8 @@ class Experiment(BaseModel):
     metrics: dict[str, Any]
     engine_version: str
     validation: str
+    # Quality of the candles this run consumed; None for runs recorded before R2
+    data_quality: DataQualityReport | None = None
     created_at: datetime
 
 

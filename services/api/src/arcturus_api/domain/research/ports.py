@@ -4,6 +4,7 @@ from abc import ABC, abstractmethod
 from typing import Any
 from uuid import UUID
 
+from arcturus_api.domain.quality.models import DataQualityReport
 from arcturus_api.domain.research.models import Experiment
 
 
@@ -23,6 +24,7 @@ class ExperimentRepository(ABC):
         metrics: dict[str, Any],
         engine_version: str,
         validation: str,
+        data_quality: DataQualityReport | None = None,
     ) -> Experiment: ...
 
     @abstractmethod

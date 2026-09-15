@@ -39,6 +39,7 @@ class TestNseParser:
         assert instruments[0].name == "Reliance Industries Limited"
         assert instruments[0].currency == "INR"
         assert instruments[0].asset_class == AssetClass.EQUITY
+        assert [item.isin for item in instruments] == ["INE002A01018", "INE467B01029"]
 
 
 class TestNasdaqParser:

@@ -3,6 +3,10 @@
 Every fresh computation (cache miss) is recorded in the Experiment Registry
 (ADR-008) so any result can later be traced to the exact run that produced it.
 Recording fails open: registry trouble never breaks a backtest response.
+
+Candles pass the shared Data Quality Engine first (R2): INVALID data is
+refused rather than backtested, and the quality report travels with the
+result and the experiment record.
 """
 
 import asyncio
@@ -14,6 +18,8 @@ from arcturus_api.application.market.service import MarketDataService, _CachedSe
 from arcturus_api.domain.backtest.engine import ENGINE_VERSION, run_backtest
 from arcturus_api.domain.backtest.models import BacktestConfig, BacktestResult
 from arcturus_api.domain.market.models import Interval
+from arcturus_api.domain.quality.candles import assess_candles
+from arcturus_api.domain.quality.models import DataQualityError, QualityStatus
 from arcturus_api.domain.research.ports import ExperimentRepository
 from arcturus_api.domain.strategy.models import UnknownStrategyError
 from arcturus_api.domain.strategy.plugins import ALL_STRATEGIES
@@ -64,13 +70,17 @@ class BacktestService(_CachedService):
             candles = await self._market.get_candles(
                 raw_symbol, Interval.DAY_1, start=end - timedelta(days=_LOOKBACK_DAYS), end=end
             )
+            quality = assess_candles(candles, now=end, source_id=self._market.provider_name)
+            if quality.status == QualityStatus.INVALID:
+                raise DataQualityError(quality)
             # CPU-bound prefix replay — keep it off the event loop
             result = await asyncio.to_thread(run_backtest, strategy, candles, BacktestConfig())
+            result = result.model_copy(update={"data_quality": quality})
             await self._record(result)
             return result
 
         return await self._cached(
-            f"backtest:v2:{strategy_key}:{raw_symbol.upper()}",
+            f"backtest:v3:{strategy_key}:{raw_symbol.upper()}",
             BACKTEST_TTL,
             BacktestResult,
             load,
@@ -92,6 +102,7 @@ class BacktestService(_CachedService):
                 metrics=_metrics_of(result),
                 engine_version=ENGINE_VERSION,
                 validation=result.validation,
+                data_quality=result.data_quality,
             )
         except Exception:
             logger.warning("experiment recording failed (fail-open)", exc_info=True)

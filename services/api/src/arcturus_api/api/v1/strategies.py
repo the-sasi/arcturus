@@ -9,6 +9,7 @@ from arcturus_api.application.strategy.backtest_service import BacktestService
 from arcturus_api.application.strategy.service import StrategyService
 from arcturus_api.domain.backtest.models import BacktestResult
 from arcturus_api.domain.market.errors import ProviderUnavailableError, SymbolNotFoundError
+from arcturus_api.domain.quality.models import DataQualityError
 from arcturus_api.domain.strategy.models import (
     InsufficientHistoryError,
     StrategyMetadata,
@@ -33,13 +34,14 @@ async def backtest(symbol: str, strategy: str, service: Backtests) -> BacktestRe
     """Replay a strategy over ~3 years of daily history with realistic costs.
 
     Past performance does not guarantee future results — this measures how the
-    rules WOULD have behaved, nothing more.
+    rules WOULD have behaved, nothing more. Candles that fail data quality
+    checks (INVALID) are refused with 422.
     """
     try:
         return await service.backtest(symbol, strategy)
     except UnknownStrategyError as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
-    except InsufficientHistoryError as exc:
+    except (InsufficientHistoryError, DataQualityError) as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from exc
     except SymbolNotFoundError as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from exc

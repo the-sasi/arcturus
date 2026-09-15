@@ -7,10 +7,12 @@ from functools import lru_cache
 
 from fastapi import Request
 
+from arcturus_api.application.identity.service import EntityResolutionService
 from arcturus_api.application.market.directory_service import InstrumentDirectoryService
 from arcturus_api.application.market.indicator_service import IndicatorService
 from arcturus_api.application.market.regime_service import RegimeService
 from arcturus_api.application.market.service import MarketDataService, ResearchDataService
+from arcturus_api.application.quality.service import DataQualityService
 from arcturus_api.application.strategy.backtest_service import BacktestService
 from arcturus_api.application.strategy.service import StrategyService
 from arcturus_api.application.watchlist.service import WatchlistService
@@ -77,3 +79,13 @@ def get_backtest_service(request: Request) -> BacktestService:
     # Built in the app lifespan so it can record experiments (needs the DB)
     service: BacktestService = request.app.state.backtest_service
     return service
+
+
+def get_identity_service(request: Request) -> EntityResolutionService:
+    service: EntityResolutionService = request.app.state.identity_service
+    return service
+
+
+@lru_cache
+def get_quality_service() -> DataQualityService:
+    return DataQualityService(get_market_service())

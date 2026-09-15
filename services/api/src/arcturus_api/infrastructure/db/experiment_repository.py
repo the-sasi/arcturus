@@ -6,6 +6,7 @@ from uuid import UUID
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
+from arcturus_api.domain.quality.models import DataQualityReport
 from arcturus_api.domain.research.models import Experiment, ExperimentNotFoundError
 from arcturus_api.domain.research.ports import ExperimentRepository
 from arcturus_api.infrastructure.db.orm import ExperimentRow
@@ -25,6 +26,9 @@ def _to_domain(row: ExperimentRow) -> Experiment:
         metrics=row.metrics,
         engine_version=row.engine_version,
         validation=row.validation,
+        data_quality=(
+            DataQualityReport.model_validate(row.data_quality) if row.data_quality else None
+        ),
         created_at=row.created_at,
     )
 
@@ -47,6 +51,7 @@ class SqlAlchemyExperimentRepository(ExperimentRepository):
         metrics: dict[str, Any],
         engine_version: str,
         validation: str,
+        data_quality: DataQualityReport | None = None,
     ) -> Experiment:
         async with self._session_factory() as session:
             row = ExperimentRow(
@@ -61,6 +66,7 @@ class SqlAlchemyExperimentRepository(ExperimentRepository):
                 metrics=metrics,
                 engine_version=engine_version,
                 validation=validation,
+                data_quality=data_quality.model_dump(mode="json") if data_quality else None,
             )
             session.add(row)
             await session.commit()

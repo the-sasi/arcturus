@@ -2,7 +2,8 @@
 
 import logging
 
-from arcturus_api.domain.market.directory import DirectorySyncResult, InstrumentPage
+from arcturus_api.application.identity.service import EntityResolutionService
+from arcturus_api.domain.market.directory import DirectorySyncResult, InstrumentPage, SyncStatus
 from arcturus_api.domain.market.models import Exchange
 from arcturus_api.domain.market.ports import InstrumentDirectoryProvider, InstrumentRepository
 
@@ -14,9 +15,11 @@ class InstrumentDirectoryService:
         self,
         repository: InstrumentRepository,
         providers: list[InstrumentDirectoryProvider],
+        identity: EntityResolutionService | None = None,
     ) -> None:
         self._repository = repository
         self._providers = providers
+        self._identity = identity
 
     async def search(
         self,
@@ -32,18 +35,36 @@ class InstrumentDirectoryService:
         """Refresh the universe from every configured exchange directory.
 
         Providers fail independently — one exchange being down must not block
-        the others from syncing.
+        the others from syncing — and a failure is reported, never silent.
+        Listings that carry ISINs also feed entity resolution.
         """
         results: list[DirectorySyncResult] = []
         for provider in self._providers:
             try:
                 listings = await provider.fetch_listings()
-            except Exception:
-                logger.exception("directory sync failed for %s", provider.name)
-                results.append(DirectorySyncResult(source=provider.name, fetched=0, upserted=0))
+            except Exception as exc:
+                logger.exception("directory sync failed for %s", provider.source_id)
+                results.append(
+                    DirectorySyncResult(
+                        source=provider.source_id,
+                        status=SyncStatus.FAILED,
+                        fetched=0,
+                        upserted=0,
+                        error=str(exc),
+                    )
+                )
                 continue
             written = await self._repository.upsert_many(listings)
+            identity = None
+            if self._identity is not None and any(item.isin for item in listings):
+                identity = await self._identity.ingest_listings(provider.source_id, listings)
             results.append(
-                DirectorySyncResult(source=provider.name, fetched=len(listings), upserted=written)
+                DirectorySyncResult(
+                    source=provider.source_id,
+                    status=SyncStatus.OK,
+                    fetched=len(listings),
+                    upserted=written,
+                    identity=identity,
+                )
             )
         return results
